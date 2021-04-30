@@ -1,0 +1,14 @@
+{
+  "name": "serum-connection-test",
+  "private": true,
+  "devDependencies": {
+    "@types/node": "^15.0.1",
+    "esbuild-runner": "^1.3.2",
+    "typescript": "^4.2.4"
+  },
+  "dependencies": {
+    "@project-serum/serum": "^0.13.34",
+    "@solana/web3.js": "^1.7.1",
+    "dotenv": "^8.2.0"
+  }
+}
