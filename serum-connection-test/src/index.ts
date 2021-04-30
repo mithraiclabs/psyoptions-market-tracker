@@ -3,6 +3,7 @@ require("dotenv").config("..");
 import { Market } from "@project-serum/serum";
 import { Connection, PublicKey } from "@solana/web3.js";
 import data from "./devnet_beta_market_data.json";
+import { sortData } from "./utils";
 
 const connection = new Connection(process.env.RPC_URL);
 const programId = new PublicKey(process.env.DEX_PROGRAM_ID);
@@ -38,22 +39,3 @@ const programId = new PublicKey(process.env.DEX_PROGRAM_ID);
     }
   }
 })();
-
-function sortData(data) {
-  return data.reduce(
-    (acc, curr) => {
-      const type = curr.underlyingAssetSymbol === "BTC" ? "calls" : "puts";
-      acc[type] = acc[type].concat(curr).sort(lowestToHighest);
-      return acc;
-    },
-    { calls: [], puts: [] }
-  );
-
-  function lowestToHighest(a, b) {
-    return (
-      Number(a.quoteAssetPerContract) +
-      Number(a.underlyingAssetPerContract) -
-      (Number(b.quoteAssetPerContract) + Number(b.underlyingAssetPerContract))
-    );
-  }
-}
