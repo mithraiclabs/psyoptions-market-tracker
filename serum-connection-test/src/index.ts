@@ -1,8 +1,6 @@
-require("dotenv").config("..");
-
 import { Market } from "@project-serum/serum";
 import { Connection, PublicKey } from "@solana/web3.js";
-import data from "./devnet_beta_market_data.json";
+import data from "./data/devnet_beta_market_data.json";
 import { sortData } from "./utils";
 
 const connection = new Connection(process.env.RPC_URL);

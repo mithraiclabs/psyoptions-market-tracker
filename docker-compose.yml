@@ -1,0 +1,15 @@
+version: "3.7"
+
+services:
+  serum-vial:
+    image: tardisdev/serum-vial:latest
+    restart: always
+    ports:
+      - 8000:8000
+    volumes:
+      - ./serum-connection-test/src/markets.json:/markets.json
+    environment:
+      # https://github.com/tardis-dev/serum-vial#env-variables
+      SV_ENDPOINT: ${RPC_URL}
+      SV_LOG_LEVEL: debug
+      SV_MARKETS_JSON: markets.json
