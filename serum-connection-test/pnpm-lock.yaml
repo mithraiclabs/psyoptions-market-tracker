@@ -1,6 +1,7 @@
 dependencies:
   '@project-serum/serum': 0.13.34
   '@solana/web3.js': 1.7.1
+  axios: 0.21.1
   dotenv: 8.2.0
   serum-vial: 1.0.3
   ws: 7.4.5
@@ -183,6 +184,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-TR2mEZFVOj2pLStYxLht7TyfuRzaydfpxr3k9RpHIzMgw7A64dzsdqCxH1WJyQdoe8T10nDXd9wnEigmiuHIZw==
+  /axios/0.21.1:
+    dependencies:
+      follow-redirects: 1.14.0
+    dev: false
+    resolution:
+      integrity: sha512-dKQiRHxGD9PPRIUNIWvZhPTPpl1rf/OxTYKsqKUDjBwYylTvV7SjSHJb9ratfyzM6wCdLCOYLzs73qpg5c4iGA==
   /balanced-match/1.0.2:
     dev: false
     resolution:
@@ -621,6 +628,17 @@ packages:
     dev: false
     resolution:
       integrity: sha512-GRnmB5gPyJpAhTQdSZTSp9uaPSvl09KoYcMQtsB9rQoOmzs9dH6ffeccH+Z+cv6P68Hu5bC6JjRh4Ah/mHSNRw==
+  /follow-redirects/1.14.0:
+    dev: false
+    engines:
+      node: '>=4.0'
+    peerDependencies:
+      debug: '*'
+    peerDependenciesMeta:
+      debug:
+        optional: true
+    resolution:
+      integrity: sha512-0vRwd7RKQBTt+mgu87mtYeofLFZpTas2S9zY+jIeuLJMNvudIgF52nr19q40HOwH5RrhWIPuj9puybzSJiRrVg==
   /fs-extra/1.0.0:
     dependencies:
       graceful-fs: 4.2.6
@@ -1606,6 +1624,7 @@ specifiers:
   '@project-serum/serum': ^0.13.34
   '@solana/web3.js': ^1.7.1
   '@types/node': ^15.0.1
+  axios: ^0.21.1
   dotenv: ^8.2.0
   esbuild-runner: ^1.3.2
   serum-vial: ^1.0.3
