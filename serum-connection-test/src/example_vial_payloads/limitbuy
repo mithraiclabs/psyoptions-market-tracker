@@ -1,0 +1,32 @@
+{
+  type: 'open',
+  market: '1 BTC : 40000 USDC',
+  timestamp: '2021-05-01T19:45:15.683Z',
+  slot: 53296965,
+  version: 3,
+  orderId: '92252167112621467631615',
+  clientId: '0',
+  side: 'buy',
+  price: '50.00',
+  size: '1',
+  account: '5hqP5hyLM5VBLz2VrUNBS7TdxCVa7EVJBaqoggSNryZg',
+  accountSlot: 0,
+  feeTier: 0
+}
+{
+  type: 'l2update',
+  market: '1 BTC : 40000 USDC',
+  timestamp: '2021-05-01T19:45:15.683Z',
+  slot: 53296965,
+  version: 3,
+  asks: [],
+  bids: [ [ '50.00', '1' ] ]
+}
+{
+  type: 'quote',
+  market: '1 BTC : 40000 USDC',
+  timestamp: '2021-05-01T19:45:15.683Z',
+  slot: 53296965,
+  version: 3,
+  bestBid: [ '50.00', '1' ]
+}
