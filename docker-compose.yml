@@ -45,5 +45,17 @@ services:
       SV_LOG_LEVEL: debug
       SV_MARKETS_JSON: markets.json
 
+  listener:
+    restart: always
+    build:
+      context: ./listener
+    depends_on:
+      - serum-vial
+    volumes:
+      - ./serum-connection-test/src/data/markets.json:/app/markets.json
+    environment:
+      GRAPHQL_URL: http://hasura:8080/v1/graphql
+      SERUM_VIAL_URL: ws://serum-vial:8000/v1/ws
+
 volumes:
   data:
