@@ -54,8 +54,18 @@ services:
     volumes:
       - ./serum-connection-test/src/data/markets.json:/app/markets.json
     environment:
-      GRAPHQL_URL: http://hasura:8080/v1/graphql
+      GRAPHQL_URL: ${GRAPHQL_URL}
       SERUM_VIAL_URL: ws://serum-vial:8000/v1/ws
+
+  dashboard:
+    restart: always
+    ports:
+      - 80:80
+    build:
+      context: ./dashboard
+      args:
+        GRAPHQL_URL: ${GRAPHQL_URL}
+        EXT_HOST: ${EXT_HOST}
 
 volumes:
   data:
