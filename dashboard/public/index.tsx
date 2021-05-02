@@ -8,9 +8,8 @@ import {
   Provider,
   subscriptionExchange,
 } from "urql";
-import Header from "./header.js";
-import Home from "./pages/home/index.js";
-import NotFound from "./pages/_404.js";
+import Home from "./pages/home";
+import NotFound from "./pages/_404";
 
 const GRAPHQL_URL = import.meta.env.GRAPHQL_URL ?? "";
 
@@ -36,7 +35,6 @@ export function App() {
     <Provider value={client}>
       <LocationProvider>
         <div class="app">
-          <Header />
           <ErrorBoundary>
             <Router>
               <Home path="/" />
@@ -50,8 +48,3 @@ export function App() {
 }
 
 hydrate(<App />);
-
-export async function prerender(data) {
-  const { default: prerender } = await import("preact-iso/prerender");
-  return await prerender(<App {...data} />);
-}

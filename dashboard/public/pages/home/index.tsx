@@ -60,7 +60,7 @@ export default function Home() {
           </tr>
         </thead>
         <tbody>
-          {data.serum_vial_events.map((event) => (
+          {data!.serum_vial_events.map((event) => (
             <tr title={JSON.stringify(event, null, 2)}>
               <td>{new Date(event.timestamp).toLocaleString()}</td>
               <td>{event.data.side}</td>
@@ -69,7 +69,7 @@ export default function Home() {
                 {event.data.market.endsWith("BTC") ? "BTC/USDC" : "USDC/BTC"}
               </td>
               <td>{new Date(1622246399000).toLocaleString()}</td>
-              <td>{format(event.data.market.match(/(\d+)/g).sort().pop())}</td>
+              <td>{format(event.data.market.match(/(\d+)/g)!.sort().pop())}</td>
               <td>-</td>
               <td>{format(event.data.size)}</td>
               <td>{format(event.data.price)}</td>
