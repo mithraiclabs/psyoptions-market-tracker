@@ -6,8 +6,8 @@ subscription {
   serum_vial_events(
     limit: 100,
     order_by: {timestamp: desc},
-    where: {data: {_contains: {type: "open"}},
-    _or: {data: {_contains: {type: "open"}}}}) {
+    where: {data: {_contains: {type: "open"}}}
+  ) {
     timestamp
     data
   }
