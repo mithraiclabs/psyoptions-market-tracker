@@ -9,8 +9,6 @@ ARG EXT_HOST
 ENV GRAPHQL_URL=${GRAPHQL_URL}
 ENV EXT_HOST=${EXT_HOST}
 
-ENV NODE_ENV=production
-
 RUN npm install && npm run build
 
 FROM flashspys/nginx-static
