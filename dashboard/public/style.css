@@ -43,3 +43,20 @@ header input {
 .app > section {
   padding: 20px;
 }
+
+th {
+  text-align: left;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+td {
+  border-top: 1px solid black;
+}
+
+td,
+th {
+  padding: 5px 10px;
+}

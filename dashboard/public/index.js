@@ -1,16 +1,35 @@
+import { SubscriptionClient } from "graphql-subscriptions-client";
 import hydrate from "preact-iso/hydrate";
-import lazy, { ErrorBoundary } from "preact-iso/lazy";
+import { ErrorBoundary } from "preact-iso/lazy";
 import { LocationProvider, Router } from "preact-iso/router";
-import { createClient, Provider } from "urql";
+import {
+  createClient,
+  defaultExchanges,
+  Provider,
+  subscriptionExchange,
+} from "urql";
 import Header from "./header.js";
 import Home from "./pages/home/index.js";
 import NotFound from "./pages/_404.js";
 
-const client = createClient({
-  url: import.meta.env.GRAPHQL_URL,
-});
+const GRAPHQL_URL = import.meta.env.GRAPHQL_URL ?? "";
 
-const About = lazy(() => import("./pages/about/index.js"));
+const subscriptionClient = new SubscriptionClient(
+  GRAPHQL_URL.replace("http", "ws"),
+  { reconnect: true }
+);
+
+const client = createClient({
+  url: GRAPHQL_URL,
+  exchanges: [
+    ...defaultExchanges,
+    subscriptionExchange({
+      forwardSubscription(operation) {
+        return subscriptionClient.request(operation);
+      },
+    }),
+  ],
+});
 
 export function App() {
   return (
@@ -21,7 +40,6 @@ export function App() {
           <ErrorBoundary>
             <Router>
               <Home path="/" />
-              <About path="/about" />
               <NotFound default />
             </Router>
           </ErrorBoundary>
