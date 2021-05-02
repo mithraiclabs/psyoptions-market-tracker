@@ -1,20 +1,42 @@
 import { useSubscription } from "urql";
-import styles from "./style.module.css";
+import { format } from "./helpers";
 
 const SerumVialEventsQuery = `
-subscription MyQuery {
+subscription {
   serum_vial_events(
     limit: 100,
     order_by: {timestamp: desc},
-    where: {data: {_contains: {type: "open"}}}
-  ) {
+    where: {data: {_contains: {type: "open"}},
+    _or: {data: {_contains: {type: "open"}}}}) {
     timestamp
     data
   }
 }`;
 
+interface SerumVialEventsQueryResponse {
+  serum_vial_events: Array<{
+    timestamp: string;
+    data: {
+      side: "buy" | "sell";
+      size: string;
+      slot: number;
+      type: string;
+      price: string;
+      market: string;
+      account: string;
+      feeTier: number;
+      orderID: string;
+      version: number;
+      clientID: string;
+      accountSlot: number;
+    };
+  }>;
+}
+
 export default function Home() {
-  const [{ data, fetching, error }, reexecuteQuery] = useSubscription({
+  const [
+    { data, fetching, error },
+  ] = useSubscription<SerumVialEventsQueryResponse>({
     query: SerumVialEventsQuery,
   });
 
@@ -22,7 +44,7 @@ export default function Home() {
   if (error) return <p>Oh no... {error.message}</p>;
 
   return (
-    <section class={styles.home}>
+    <section>
       <table>
         <thead>
           <tr>
@@ -47,10 +69,10 @@ export default function Home() {
                 {event.data.market.endsWith("BTC") ? "BTC/USDC" : "USDC/BTC"}
               </td>
               <td>{new Date(1622246399000).toLocaleString()}</td>
-              <td>{event.data.market.match(/(\d+)/g).sort().pop()}</td>
+              <td>{format(event.data.market.match(/(\d+)/g).sort().pop())}</td>
               <td>-</td>
-              <td>{event.data.size}</td>
-              <td>{event.data.price}</td>
+              <td>{format(event.data.size)}</td>
+              <td>{format(event.data.price)}</td>
             </tr>
           ))}
         </tbody>
