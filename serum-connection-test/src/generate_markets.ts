@@ -15,8 +15,10 @@ const markets: Array<Market> = [...calls, ...puts].map((market) => ({
   address: market.serumMarketAddress,
   deprecated: false,
   name: [
-    `${market.underlyingAssetPerContract} ${market.underlyingAssetSymbol}`,
-    `${market.quoteAssetPerContract} ${market.quoteAssetSymbol}`,
+    `${market.underlyingAssetPerContract / 10 ** 9} ${
+      market.underlyingAssetSymbol
+    }`,
+    `${market.quoteAssetPerContract / 10 ** 9} ${market.quoteAssetSymbol}`,
   ].join(" : "),
   programId: process.env.DEX_PROGRAM_ID,
 }));
