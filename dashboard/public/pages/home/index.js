@@ -41,7 +41,7 @@ export default function Home() {
           {data.serum_vial_events.map((event) => (
             <tr title={JSON.stringify(event, null, 2)}>
               <td>{new Date(event.timestamp).toLocaleString()}</td>
-              <td>buy</td>
+              <td>{event.data.side}</td>
               <td>{event.data.market.endsWith("BTC") ? "put" : "call"}</td>
               <td>
                 {event.data.market.endsWith("BTC") ? "BTC/USDC" : "USDC/BTC"}
