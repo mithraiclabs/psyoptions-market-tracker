@@ -28,7 +28,7 @@ export default function Home() {
           <tr>
             <th>Time</th>
             <th>Side</th>
-            <th>Option Type</th>
+            <th>Type</th>
             <th>Asset Pair</th>
             <th>Expiration</th>
             <th>Strike Price</th>
@@ -44,12 +44,12 @@ export default function Home() {
               <td>buy</td>
               <td>{event.data.market.endsWith("BTC") ? "put" : "call"}</td>
               <td>
-                {event.data.market.endsWith("BTC") ? "USDC/BTC" : "BTC/USDC"}
+                {event.data.market.endsWith("BTC") ? "BTC/USDC" : "USDC/BTC"}
               </td>
-              <td>{new Date(1622246399).toLocaleString()}</td>
+              <td>{new Date(1622246399000).toLocaleString()}</td>
               <td>{event.data.market.match(/(\d+)/g).sort().pop()}</td>
               <td>-</td>
-              <td>-</td>
+              <td>{event.data.size}</td>
               <td>{event.data.price}</td>
             </tr>
           ))}
