@@ -1,0 +1,23 @@
+{
+	"scripts": {
+		"start": "wmr",
+		"build": "wmr build --prerender",
+		"serve": "wmr serve"
+	},
+	"eslintConfig": {
+		"extends": "preact"
+	},
+	"alias": {
+		"react": "preact/compat",
+		"react-dom": "preact/compat"
+	},
+	"dependencies": {
+		"graphql": "^15.5.0",
+		"preact": "^10.5.12",
+		"preact-iso": "^1.0.0",
+		"urql": "^2.0.2"
+	},
+	"devDependencies": {
+		"wmr": "^1.2.0"
+	}
+}
