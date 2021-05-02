@@ -27,17 +27,29 @@ export default function Home() {
         <thead>
           <tr>
             <th>Time</th>
-            <th>Market</th>
             <th>Side</th>
-            <th>Price</th>
+            <th>Option Type</th>
+            <th>Asset Pair</th>
+            <th>Expiration</th>
+            <th>Strike Price</th>
+            <th>Contract Size</th>
+            <th>Order Size</th>
+            <th>Limit Price</th>
           </tr>
         </thead>
         <tbody>
           {data.serum_vial_events.map((event) => (
             <tr title={JSON.stringify(event, null, 2)}>
               <td>{new Date(event.timestamp).toLocaleString()}</td>
-              <td>{event.data.market}</td>
-              <td>{event.data.market.endsWith("BTC") ? "PUT" : "CALL"}</td>
+              <td>buy</td>
+              <td>{event.data.market.endsWith("BTC") ? "put" : "call"}</td>
+              <td>
+                {event.data.market.endsWith("BTC") ? "USDC/BTC" : "BTC/USDC"}
+              </td>
+              <td>{new Date(1622246399).toLocaleString()}</td>
+              <td>{event.data.market.match(/(\d+)/g).sort().pop()}</td>
+              <td>-</td>
+              <td>-</td>
               <td>{event.data.price}</td>
             </tr>
           ))}
