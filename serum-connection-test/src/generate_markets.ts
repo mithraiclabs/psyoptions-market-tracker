@@ -13,13 +13,8 @@ const { calls, puts } = sortData(data);
 
 const markets: Array<Market> = [...calls, ...puts].map((market) => ({
   address: market.serumMarketAddress,
+  name: market.serumMarketAddress,
   deprecated: false,
-  name: [
-    `${market.underlyingAssetPerContract / 10 ** 9} ${
-      market.underlyingAssetSymbol
-    }`,
-    `${market.quoteAssetPerContract / 10 ** 9} ${market.quoteAssetSymbol}`,
-  ].join(" : "),
   programId: process.env.DEX_PROGRAM_ID,
 }));
 

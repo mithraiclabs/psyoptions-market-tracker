@@ -2,109 +2,109 @@
   {
     "address": "7oUpRD9UzwQbjHR7xceDS56sn9eQp2Wb15YfDpKaQNsJ",
     "deprecated": false,
-    "name": "1 BTC : 40000 USDC",
+    "name": "7oUpRD9UzwQbjHR7xceDS56sn9eQp2Wb15YfDpKaQNsJ",
     "programId": "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY"
   },
   {
     "address": "9Y8juab7k1KJK36T4NzQFLjeeaxQFdMXvhtU8qsp6sjo",
     "deprecated": false,
-    "name": "1 BTC : 45000 USDC",
+    "name": "9Y8juab7k1KJK36T4NzQFLjeeaxQFdMXvhtU8qsp6sjo",
     "programId": "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY"
   },
   {
     "address": "FxbrsmeLiG6X6P2qcwW96de8LKH68MDqfnkyA2GFqwN",
     "deprecated": false,
-    "name": "1 BTC : 50000 USDC",
+    "name": "FxbrsmeLiG6X6P2qcwW96de8LKH68MDqfnkyA2GFqwN",
     "programId": "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY"
   },
   {
     "address": "BrBdcvmm4cyUD21DxwJY6UC7LmKKAbTE97wa2K5axuwK",
     "deprecated": false,
-    "name": "1 BTC : 55000 USDC",
+    "name": "BrBdcvmm4cyUD21DxwJY6UC7LmKKAbTE97wa2K5axuwK",
     "programId": "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY"
   },
   {
     "address": "BqazJFZM4pXLxgf5HESsYsrimgATThYot68uc7yHzhhd",
     "deprecated": false,
-    "name": "1 BTC : 60000 USDC",
+    "name": "BqazJFZM4pXLxgf5HESsYsrimgATThYot68uc7yHzhhd",
     "programId": "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY"
   },
   {
     "address": "CCAHnBm7Rzf9Roymvv4Vw9DRSH1q3mUxZsAQCEsqAhvC",
     "deprecated": false,
-    "name": "1 BTC : 65000 USDC",
+    "name": "CCAHnBm7Rzf9Roymvv4Vw9DRSH1q3mUxZsAQCEsqAhvC",
     "programId": "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY"
   },
   {
     "address": "6qJPU3ENUxBQiekxbf4Vm4z9bVXbyTnMmg9c9UVC1m9P",
     "deprecated": false,
-    "name": "1 BTC : 70000 USDC",
+    "name": "6qJPU3ENUxBQiekxbf4Vm4z9bVXbyTnMmg9c9UVC1m9P",
     "programId": "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY"
   },
   {
     "address": "AvqiKAN5qUaEktCPHZGyXVVnC77rjv9orvjBciC1xabq",
     "deprecated": false,
-    "name": "1 BTC : 75000 USDC",
+    "name": "AvqiKAN5qUaEktCPHZGyXVVnC77rjv9orvjBciC1xabq",
     "programId": "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY"
   },
   {
     "address": "HBfXYFFUG5wTn3C9suWyfJtDf4oU3oU6g4qsQEyL1bfZ",
     "deprecated": false,
-    "name": "1 BTC : 80000 USDC",
+    "name": "HBfXYFFUG5wTn3C9suWyfJtDf4oU3oU6g4qsQEyL1bfZ",
     "programId": "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY"
   },
   {
     "address": "2tiLzdSMGjnjNgLHvxz3P6r1SzB3MzLgyZtughV4AEwz",
     "deprecated": false,
-    "name": "40000 USDC : 1 BTC",
+    "name": "2tiLzdSMGjnjNgLHvxz3P6r1SzB3MzLgyZtughV4AEwz",
     "programId": "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY"
   },
   {
     "address": "BQWWhCN1vG5KC53mveASRYgzxE1Wc3YS4XC4ATekfTK5",
     "deprecated": false,
-    "name": "45000 USDC : 1 BTC",
+    "name": "BQWWhCN1vG5KC53mveASRYgzxE1Wc3YS4XC4ATekfTK5",
     "programId": "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY"
   },
   {
     "address": "AMV2GZ9tAQvq7veCmrtYFKruQbJYjwqahr5ZG3KPXRaD",
     "deprecated": false,
-    "name": "50000 USDC : 1 BTC",
+    "name": "AMV2GZ9tAQvq7veCmrtYFKruQbJYjwqahr5ZG3KPXRaD",
     "programId": "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY"
   },
   {
     "address": "4gypdTmPpNfrSSxqLSzoERhEFMzgNMyit6qCus3kyqGj",
     "deprecated": false,
-    "name": "55000 USDC : 1 BTC",
+    "name": "4gypdTmPpNfrSSxqLSzoERhEFMzgNMyit6qCus3kyqGj",
     "programId": "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY"
   },
   {
     "address": "4VTZ3p3GE3pDFGQsZoVyPRfTm7hZ8CH71e3ygo4kXqco",
     "deprecated": false,
-    "name": "60000 USDC : 1 BTC",
+    "name": "4VTZ3p3GE3pDFGQsZoVyPRfTm7hZ8CH71e3ygo4kXqco",
     "programId": "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY"
   },
   {
     "address": "AqujPHJ49yYbYryKByHkFUKtyiQD9VrNskkRjEoQdW8m",
     "deprecated": false,
-    "name": "65000 USDC : 1 BTC",
+    "name": "AqujPHJ49yYbYryKByHkFUKtyiQD9VrNskkRjEoQdW8m",
     "programId": "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY"
   },
   {
     "address": "2KSdAoiXetBadUD79VE3tYBwkpqovLkYw7oyEztgdVrg",
     "deprecated": false,
-    "name": "70000 USDC : 1 BTC",
+    "name": "2KSdAoiXetBadUD79VE3tYBwkpqovLkYw7oyEztgdVrg",
     "programId": "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY"
   },
   {
     "address": "2MT54cLPTrrTU8vCoJvauithvJPqvQzLGk16L6qJvBkT",
     "deprecated": false,
-    "name": "75000 USDC : 1 BTC",
+    "name": "2MT54cLPTrrTU8vCoJvauithvJPqvQzLGk16L6qJvBkT",
     "programId": "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY"
   },
   {
     "address": "2eHXc2vWLksfVaXoXugLAduQvj2pQRoN3vMSyyFbjsHo",
     "deprecated": false,
-    "name": "80000 USDC : 1 BTC",
+    "name": "2eHXc2vWLksfVaXoXugLAduQvj2pQRoN3vMSyyFbjsHo",
     "programId": "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY"
   }
 ]
