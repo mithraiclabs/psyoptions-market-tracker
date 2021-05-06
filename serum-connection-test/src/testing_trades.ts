@@ -1,11 +1,13 @@
 import { Market } from "@project-serum/serum";
 import { Connection, PublicKey } from "@solana/web3.js";
-import notifier from "node-notifier";
 import data from "./data/devnet_beta_market_data.json";
 import { sortData } from "./utils";
+// import notifier from "node-notifier";
 
 const connection = new Connection(process.env.RPC_URL);
 const dexProgramId = new PublicKey(process.env.DEX_PROGRAM_ID);
+
+const seenOrderIds = new Set<string>();
 
 async function go() {
   console.log(new Date().toLocaleString());
@@ -25,13 +27,19 @@ async function go() {
         undefined,
         dexProgramId
       );
-      let fills = await market.loadFills(connection);
+      const fills = await market.loadFills(connection);
 
-      if (fills.length > 0) {
-        notifier.notify({
-          title: serumMarketAddress,
-          message: JSON.stringify(fills),
-        });
+      // TODO: check that fills are ordered newest>oldest
+      for (let i = 0; i < fills.length; i++) {
+        const fill = fills[i];
+        const id = fill.orderId.toString();
+
+        if (seenOrderIds.has(id)) break;
+        seenOrderIds.add(id);
+
+        // this is a new fill, push it out to DB
+
+        console.log(JSON.stringify(fill, null, 2));
       }
     } catch (err) {
       console.error({ error: err });
