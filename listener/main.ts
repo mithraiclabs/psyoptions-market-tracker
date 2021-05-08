@@ -6,14 +6,6 @@ const ws: WebSocketClient = new StandardWebSocketClient(
 );
 
 ws.on("open", function () {
-  // https://github.com/tardis-dev/serum-vial#supported-channels--corresponding-message-types
-  const channels = [
-    "trades", // unused?
-    "level1", // for 'quote'
-    "level2", // for 'l2update'
-    "level3", // for 'open' and 'done'
-  ];
-
   const markets: Array<{
     address: string;
     deprecated: boolean;
@@ -21,15 +13,18 @@ ws.on("open", function () {
     programId: string;
   }> = JSON.parse(Deno.readTextFileSync("./markets.json"));
 
-  channels.forEach((channel) => {
-    ws.send(
-      JSON.stringify({
-        op: "subscribe",
-        channel,
-        markets: markets.map((m) => m.name),
-      })
-    );
-  });
+  String(Deno.env.get("CHANNELS"))
+    .split(",")
+    .map((c) => c.trim())
+    .forEach((channel) => {
+      ws.send(
+        JSON.stringify({
+          op: "subscribe",
+          channel,
+          markets: markets.map((m) => m.name),
+        })
+      );
+    });
 });
 
 ws.on("message", async function (message: any) {
