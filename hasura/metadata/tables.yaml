@@ -1,3 +1,6 @@
 - table:
     schema: public
+    name: serum_markets
+- table:
+    schema: public
     name: serum_vial_events
