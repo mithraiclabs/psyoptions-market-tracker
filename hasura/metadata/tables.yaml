@@ -1,5 +1,40 @@
 - table:
     schema: public
+    name: assets
+  array_relationships:
+  - name: quote_markets
+    using:
+      foreign_key_constraint_on:
+        column: quote_asset_mint_address
+        table:
+          schema: public
+          name: markets
+  - name: underlying_markets
+    using:
+      foreign_key_constraint_on:
+        column: underlying_asset_mint_address
+        table:
+          schema: public
+          name: markets
+- table:
+    schema: public
+    name: markets
+  object_relationships:
+  - name: quote_asset
+    using:
+      foreign_key_constraint_on: quote_asset_mint_address
+  - name: serumClusterBySerumCluster
+    using:
+      foreign_key_constraint_on: serum_cluster
+  - name: underlying_asset
+    using:
+      foreign_key_constraint_on: underlying_asset_mint_address
+- table:
+    schema: public
+    name: serum_clusters
+  is_enum: true
+- table:
+    schema: public
     name: serum_markets
   array_relationships:
   - name: serum_vial_events
