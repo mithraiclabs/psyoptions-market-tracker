@@ -28,7 +28,21 @@ ws.on("open", function () {
 });
 
 ws.on("message", async function (message: any) {
-  const { timestamp, ...data } = JSON.parse(message.data);
+  const { market, slot, timestamp, type, version, ...data } = JSON.parse(
+    message.data
+  );
+
+  // don't bother saving useless data
+
+  if (type === "recent_trades" && data.trades.length === 0) return;
+  if (Object.keys(data).length === 0) return;
+  if (
+    data.asks &&
+    data.bids &&
+    data.asks.length === 0 &&
+    data.bids.length === 0
+  )
+    return;
 
   await fetch(String(Deno.env.get("GRAPHQL_URL")), {
     method: "POST",
@@ -38,15 +52,33 @@ ws.on("message", async function (message: any) {
     },
     body: JSON.stringify({
       query: `
-          mutation InsertEvent($data: jsonb, $timestamp: timestamptz) {
-            insert_serum_vial_events_one(object: {data: $data, timestamp: $timestamp}) {
+          mutation InsertEvent(
+            $data: jsonb,
+            $serum_market_id: String,
+            $slot: bigint,
+            $timestamp: timestamptz,
+            $type: serum_vial_event_types_enum,
+            $version: Int
+          ) {
+            insert_serum_vial_events_one(object: {
+              data: $data,
+              serum_market_id: $serum_market_id,
+              slot: $slot,
+              timestamp: $timestamp,
+              type: $type,
+              version: $version
+            }) {
               timestamp
             }
           }
         `,
       variables: {
         data,
+        serum_market_id: market,
+        slot,
         timestamp,
+        type,
+        version,
       },
     }),
   });
