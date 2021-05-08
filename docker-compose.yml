@@ -38,7 +38,7 @@ services:
     ports:
       - 8000:8000
     volumes:
-      - ./serum-connection-test/src/data/markets.json:/markets.json
+      - ./markets.json:/markets.json
     environment:
       # https://github.com/tardis-dev/serum-vial#env-variables
       SV_ENDPOINT: ${RPC_URL}
@@ -52,7 +52,7 @@ services:
     depends_on:
       - serum-vial
     volumes:
-      - ./serum-connection-test/src/data/markets.json:/app/markets.json
+      - ./markets.json:/app/markets.json
     environment:
       GRAPHQL_URL: ${GRAPHQL_URL}
       SERUM_VIAL_URL: ws://serum-vial:8000/v1/ws
