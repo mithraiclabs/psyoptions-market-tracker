@@ -37,6 +37,13 @@
         table:
           schema: public
           name: serum_events
+  computed_fields:
+  - name: volume
+    definition:
+      function:
+        schema: public
+        name: volume
+    comment: ""
 - table:
     schema: public
     name: serum_clusters
