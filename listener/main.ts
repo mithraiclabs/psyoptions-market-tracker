@@ -28,60 +28,85 @@ ws.on("open", function () {
 });
 
 ws.on("message", async function (message: any) {
-  const { market, slot, timestamp, type, version, ...data } = JSON.parse(
-    message.data
-  );
+  const data = JSON.parse(message.data);
 
-  // don't bother saving useless data
+  if (!["trade", "open", "change"].includes(data.type)) return;
 
-  if (type === "recent_trades" && data.trades.length === 0) return;
-  if (Object.keys(data).length === 0) return;
-  if (
-    data.asks &&
-    data.bids &&
-    data.asks.length === 0 &&
-    data.bids.length === 0
-  )
-    return;
-
-  await fetch(String(Deno.env.get("GRAPHQL_URL")), {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      query: `
-          mutation InsertEvent(
-            $data: jsonb,
-            $serum_market_id: String,
-            $slot: bigint,
-            $timestamp: timestamptz,
-            $type: serum_vial_event_types_enum,
-            $version: Int
-          ) {
-            insert_serum_vial_events_one(object: {
-              data: $data,
-              serum_market_id: $serum_market_id,
-              slot: $slot,
-              timestamp: $timestamp,
-              type: $type,
-              version: $version
-            }) {
-              timestamp
-            }
+  const body = {
+    query: `
+    mutation (
+      $account: String
+      $account_slot: Int
+      $client_id: String
+      $data: jsonb
+      $fee_tier: Int
+      $id: String
+      $order_id: String
+      $price: numeric
+      $serum_address: String
+      $side: side
+      $size: numeric
+      $slot: bigint
+      $timestamp: timestamp
+      $type: serum_vial_event_types_enum
+      $version: Int
+    ) {
+      insert_serum_events_one(
+        object: {
+          account: $account
+          account_slot: $account_slot
+          client_id: $client_id
+          data: $data
+          fee_tier: $fee_tier
+          id: $id
+          order_id: $order_id
+          price: $price
+          side: $side
+          size: $size
+          slot: $slot
+          timestamp: $timestamp
+          type: $type
+          version: $version
+          market: {
+            data: { serum_address: $serum_address }
+            on_conflict: { constraint: markets_serum_address_key, update_columns: serum_address }
           }
-        `,
-      variables: {
-        data,
-        serum_market_id: market,
-        slot,
-        timestamp,
-        type,
-        version,
-      },
-    }),
-  });
+        }
+      ) {
+        id
+      }
+    }
+      `,
+    variables: {
+      account: data.account,
+      account_slot: data.accountSlot,
+      client_id: data.clientId,
+      data,
+      fee_tier: data.feeTier,
+      id: data.id,
+      order_id: data.orderId,
+      price: data.price,
+      serum_address: data.market,
+      side: data.side,
+      size: data.size,
+      slot: data.slot,
+      timestamp: data.timestamp,
+      type: data.type,
+      version: data.version,
+    },
+  };
 
-  console.log({ timestamp, data });
+  try {
+    await fetch(String(Deno.env.get("GRAPHQL_URL")), {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+    console.log(data);
+  } catch (err) {
+    console.error({ err });
+  }
 });
