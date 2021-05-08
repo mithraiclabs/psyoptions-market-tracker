@@ -29,10 +29,25 @@
   - name: underlying_asset
     using:
       foreign_key_constraint_on: underlying_asset_mint_address
+  array_relationships:
+  - name: serum_events
+    using:
+      foreign_key_constraint_on:
+        column: market_id
+        table:
+          schema: public
+          name: serum_events
 - table:
     schema: public
     name: serum_clusters
   is_enum: true
+- table:
+    schema: public
+    name: serum_events
+  object_relationships:
+  - name: market
+    using:
+      foreign_key_constraint_on: market_id
 - table:
     schema: public
     name: serum_markets
