@@ -1,5 +1,6 @@
 import { useSubscription } from "urql";
 import Events from "./events";
+import { formatMarketName } from "./shared";
 
 const SerumVialEventsQuery = `
 subscription {
@@ -21,7 +22,7 @@ subscription {
 }
 `;
 
-export default function Home() {
+export default function Dashboard() {
   const [{ data, fetching, error }] = useSubscription<any>({
     query: SerumVialEventsQuery,
   });
@@ -47,12 +48,7 @@ export default function Home() {
             {type.map((market: any) => (
               <tbody>
                 <tr>
-                  <th>
-                    {market.quote_asset_per_contract}{" "}
-                    {market.quote_asset.symbol}/
-                    {market.underlying_asset_per_contract}{" "}
-                    {market.underlying_asset.symbol}
-                  </th>
+                  <th>{formatMarketName(market)}</th>
                   <td>{market.latest_price}</td>
                   <td>{formatChange(market.change)}</td>
                   <td>{num(market.volume)}</td>

@@ -8,7 +8,7 @@ import {
   Provider,
   subscriptionExchange,
 } from "urql";
-import Home from "./pages/home";
+import Dashboard from "./pages/dashboard";
 import NotFound from "./pages/_404";
 
 const GRAPHQL_URL = import.meta.env.GRAPHQL_URL ?? "";
@@ -37,7 +37,7 @@ export function App() {
         <div class="app">
           <ErrorBoundary>
             <Router>
-              <Home path="/" />
+              <Dashboard path="/" />
               <NotFound default />
             </Router>
           </ErrorBoundary>

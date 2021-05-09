@@ -1,9 +1,10 @@
 import { formatDistanceToNow } from "date-fns";
 import { useSubscription } from "urql";
+import { formatMarketName } from "./shared";
 
 const EventsQuery = `
 subscription {
-  serum_events(order_by: {timestamp: desc}, limit: 15) {
+  serum_events(order_by: {timestamp: desc}, limit: 20) {
     market {
       option_type
       quote_asset {
@@ -51,16 +52,11 @@ export default function Events() {
               {formatDistanceToNow(new Date(event.timestamp + "Z"))} ago
             </td>
             <td>
-              {event.market.quote_asset_per_contract}{" "}
-              {event.market.quote_asset.symbol}/
-              {event.market.underlying_asset_per_contract}{" "}
-              {event.market.underlying_asset.symbol}
+              <th>{formatMarketName(event.market)}</th>
             </td>
             <td>{event.type}</td>
             <td>{event.side}</td>
-            <td>
-              {event.price} {event.market.quote_asset.symbol}
-            </td>
+            <td>{event.price}</td>
             <td>{event.size}</td>
           </tr>
         </tbody>
