@@ -90,11 +90,12 @@ function formatChange(x?: number | string) {
 
   if (!num) return;
 
+  // TODO remove all this, it's unnecessary as - included with API
   const [className, sign] = (() => {
     if (num > 0) {
       return ["pos", "+"];
     } else if (num < 0) {
-      return ["neg", "-"];
+      return ["neg", ""];
     } else {
       return ["", ""];
     }
