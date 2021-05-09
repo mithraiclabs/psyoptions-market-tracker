@@ -44,6 +44,18 @@
         schema: public
         name: volume
     comment: ""
+  - name: latest_price
+    definition:
+      function:
+        schema: public
+        name: latest_price
+    comment: ""
+  - name: change
+    definition:
+      function:
+        schema: public
+        name: change
+    comment: ""
 - table:
     schema: public
     name: serum_clusters
