@@ -13,7 +13,7 @@ subscription {
     }
     volume
     latest_price
-    change(args: { duration: "24 hours", percentage: true })
+    change(args: { duration: "1 hour", percentage: true })
 
     underlying_asset_per_contract
     quote_asset_per_contract
@@ -40,7 +40,7 @@ export default function Home() {
               <tr>
                 <th>{type[0].option_type} Size</th>
                 <th>Latest Price</th>
-                <th>24hr Change</th>
+                <th>1hr Change</th>
                 <th>Volume</th>
               </tr>
             </thead>
