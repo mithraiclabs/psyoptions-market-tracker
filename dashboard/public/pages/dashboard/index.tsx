@@ -103,7 +103,7 @@ function formatChange(x?: number | string) {
   return (
     <span class={className}>
       {sign}
-      {num.toFixed(2)}
+      {num.toFixed(1)}%
     </span>
   );
 }
