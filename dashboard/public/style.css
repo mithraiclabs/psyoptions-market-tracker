@@ -7,21 +7,28 @@ body {
 
 .app > section {
   padding: 20px;
+  display: flex;
 }
 
 table {
   border-collapse: collapse;
+  flex: 1;
+  width: 100%;
 }
 
 th {
   text-align: left;
 }
 
-td {
-  border-top: 1px solid black;
-}
-
 th,
 td {
   padding: 5px 10px;
+}
+
+.pos {
+  color: green;
+}
+
+.neg {
+  color: red;
 }

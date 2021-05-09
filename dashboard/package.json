@@ -13,6 +13,7 @@
     "react-dom": "preact/compat"
   },
   "dependencies": {
+    "date-fns": "^2.21.3",
     "graphql": "^15.5.0",
     "graphql-subscriptions-client": "^0.16.0",
     "preact": "^10.5.12",

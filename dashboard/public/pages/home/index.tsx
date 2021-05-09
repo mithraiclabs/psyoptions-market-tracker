@@ -1,82 +1,117 @@
 import { useSubscription } from "urql";
-import { format } from "./helpers";
+import Events from "./events";
 
 const SerumVialEventsQuery = `
 subscription {
-  serum_vial_events(
-    limit: 100,
-    order_by: {timestamp: desc},
-    where: {data: {_contains: {type: "open"}}}
-  ) {
-    timestamp
-    data
-  }
-}`;
+  markets {
+    option_type
+    quote_asset {
+      symbol
+    }
+    underlying_asset {
+      symbol
+    }
+    volume
+    latest_price
+    change(args: { duration: "24 hours", percentage: true })
 
-interface SerumVialEventsQueryResponse {
-  serum_vial_events: Array<{
-    timestamp: string;
-    data: {
-      side: "buy" | "sell";
-      size: string;
-      slot: number;
-      type: string;
-      price: string;
-      market: string;
-      account: string;
-      feeTier: number;
-      orderID: string;
-      version: number;
-      clientID: string;
-      accountSlot: number;
-    };
-  }>;
+    underlying_asset_per_contract
+    quote_asset_per_contract
+  }
 }
+`;
 
 export default function Home() {
-  const [
-    { data, fetching, error },
-  ] = useSubscription<SerumVialEventsQueryResponse>({
+  const [{ data, fetching, error }] = useSubscription<any>({
     query: SerumVialEventsQuery,
   });
 
   if (fetching) return <p>Loading...</p>;
   if (error) return <p>Oh no... {error.message}</p>;
 
+  const types = sortMarkets(data.markets);
+
   return (
-    <section>
-      <table>
-        <thead>
-          <tr>
-            <th>Time</th>
-            <th>Side</th>
-            <th>Type</th>
-            <th>Asset Pair</th>
-            <th>Expiration</th>
-            <th>Strike Price</th>
-            <th>Contract Size</th>
-            <th>Order Size</th>
-            <th>Limit Price</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data!.serum_vial_events.map((event) => (
-            <tr title={JSON.stringify(event, null, 2)}>
-              <td>{new Date(event.timestamp).toLocaleString()}</td>
-              <td>{event.data.side}</td>
-              <td>{event.data.market.endsWith("BTC") ? "put" : "call"}</td>
-              <td>
-                {event.data.market.endsWith("BTC") ? "BTC/USDC" : "USDC/BTC"}
-              </td>
-              <td>{new Date(1622246399000).toLocaleString()}</td>
-              <td>{format(event.data.market.match(/(\d+)/g)!.sort().pop())}</td>
-              <td>-</td>
-              <td>{format(event.data.size)}</td>
-              <td>{format(event.data.price)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </section>
+    <>
+      <section>
+        {types.map((type: any) => (
+          <table>
+            <thead>
+              <tr>
+                <th>{type[0].option_type} Size</th>
+                <th>Latest Price</th>
+                <th>24hr Change</th>
+                <th>Volume</th>
+              </tr>
+            </thead>
+            {type.map((market: any) => (
+              <tbody>
+                <tr>
+                  <th>
+                    {market.quote_asset_per_contract}{" "}
+                    {market.quote_asset.symbol}/
+                    {market.underlying_asset_per_contract}{" "}
+                    {market.underlying_asset.symbol}
+                  </th>
+                  <td>{market.latest_price}</td>
+                  <td>{formatChange(market.change)}</td>
+                  <td>{num(market.volume)}</td>
+                </tr>
+              </tbody>
+            ))}
+          </table>
+        ))}
+      </section>
+      <section>
+        <Events />
+      </section>
+    </>
   );
+}
+
+function sortMarkets(data: any) {
+  const { call, put } = data.reduce(
+    (acc: any, curr: any) => {
+      acc[curr.option_type] = acc[curr.option_type].concat(curr).sort(bySize);
+      return acc;
+    },
+    { call: [], put: [] }
+  );
+
+  return [call, put];
+
+  function bySize(a: any, b: any) {
+    return (
+      a.quote_asset_per_contract +
+      a.underlying_asset_per_contract -
+      (b.quote_asset_per_contract + b.underlying_asset_per_contract)
+    );
+  }
+}
+
+function formatChange(x?: number | string) {
+  const num = Number(x);
+
+  if (!num) return;
+
+  const [className, sign] = (() => {
+    if (num > 0) {
+      return ["pos", "+"];
+    } else if (num < 0) {
+      return ["neg", "-"];
+    } else {
+      return ["", ""];
+    }
+  })();
+
+  return (
+    <span class={className}>
+      {sign}
+      {num.toFixed(2)}
+    </span>
+  );
+}
+
+function num(amount: number) {
+  if (amount) return new Intl.NumberFormat().format(amount);
 }

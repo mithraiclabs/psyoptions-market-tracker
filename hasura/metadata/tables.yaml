@@ -50,6 +50,12 @@
         schema: public
         name: latest_price
     comment: ""
+  - name: option_type
+    definition:
+      function:
+        schema: public
+        name: option_type
+    comment: ""
   - name: change
     definition:
       function:
