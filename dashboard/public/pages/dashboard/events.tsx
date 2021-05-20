@@ -45,8 +45,8 @@ export default function Events() {
           <th>Size</th>
         </tr>
       </thead>
-      {data.serum_events.map((event: any) => (
-        <tbody>
+      <tbody>
+        {data.serum_events.map((event: any) => (
           <tr>
             <td title={new Date(event.timestamp + "Z").toLocaleString()}>
               {formatDistanceToNow(new Date(event.timestamp + "Z"))} ago
@@ -59,8 +59,8 @@ export default function Events() {
             <td>{event.price}</td>
             <td>{event.size}</td>
           </tr>
-        </tbody>
-      ))}
+        ))}
+      </tbody>
     </table>
   );
 }
