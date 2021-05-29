@@ -1,3 +1,6 @@
+const { writeFileSync } = require("fs");
+const data = require("../marketMeta.json");
+
 // assets {
 //   mint_address
 //   symbol
@@ -29,10 +32,7 @@
 //   }
 // }
 
-const camelToSnakeCase = (str) =>
-  str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
-
-const objects = require("./devnet_beta_market_data.json").map((market, i) => {
+const objects = data.map((market, i) => {
   const {
     serumMarketAddress,
     quoteAssetMint,
@@ -70,7 +70,7 @@ const objects = require("./devnet_beta_market_data.json").map((market, i) => {
   }`;
 });
 
-require("fs").writeFileSync(
+writeFileSync(
   "./mutation.gql",
   `
 mutation CreateMarkets {
@@ -85,3 +85,24 @@ mutation CreateMarkets {
 }
 `
 );
+
+writeFileSync(
+  "markets.json",
+  JSON.stringify(
+    data.map((market) => ({
+      address: market.serumMarketAddress,
+      deprecated: false,
+      name: market.serumMarketAddress,
+      programId: "DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY",
+    })),
+    null,
+    2
+  )
+);
+
+console.info(`
+markets files regenerated!
+
+1. copy the contents of mutation.gql and paste in hasura console
+2. restart docker-compose so that serum-vial tracks the new markets.json
+`);
