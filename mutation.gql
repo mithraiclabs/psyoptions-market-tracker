@@ -1,0 +1,263 @@
+
+mutation CreateMarkets {
+  insert_markets(
+    objects: [{
+    serum_cluster: devnet,
+    serum_address: "5XBaiEbabJr2Hgd86NLuxCqRMqoQWzdFhHgKCiJtd2fF",
+    expires_at: "2021-06-25T23:59:59.000Z",
+    quote_asset: {
+      data: {
+        symbol: "USDC",
+        mint_address: "E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF",
+      },
+      on_conflict: { constraint: assets_pkey, update_columns: mint_address },
+    },
+    underlying_asset: {
+      data: {
+        symbol: "BTC",
+        mint_address: "C6kYXcaRUMqeBF5fhg165RWU7AnpT9z92fvKNoMqjmz6",
+      },
+      on_conflict: { constraint: assets_pkey, update_columns: mint_address },
+    },
+    quote_asset_per_contract: 0.0035,
+    underlying_asset_per_contract: 1,
+    data: {expiration:1624665599,optionMarketAddress:"2fFJU1PdjXFVR1zajjAa75NCwR2UEEzqvSXQdfiKBviL",optionContractMintAddress:"DdsiuMR1hooQFLKqvLUDZKHscC2FJocxhwRsXJktq87y",optionWriterTokenMintAddress:"6kRmoqjm1akAGXVrGKYvyZUc6BEaBfo3ZJ7dMHh4FQ5o",quoteAssetMint:"E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF",quoteAssetSymbol:"USDC",underlyingAssetMint:"C6kYXcaRUMqeBF5fhg165RWU7AnpT9z92fvKNoMqjmz6",underlyingAssetSymbol:"BTC",underlyingAssetPerContract:"1000000000",quoteAssetPerContract:"3500000",serumMarketAddress:"5XBaiEbabJr2Hgd86NLuxCqRMqoQWzdFhHgKCiJtd2fF"}
+  },{
+    serum_cluster: devnet,
+    serum_address: "DRyseDNeM5P8VuM8nRyiMdgmauvqzcEHx9kmp9HFLAsF",
+    expires_at: "2021-05-28T23:59:59.000Z",
+    quote_asset: {
+      data: {
+        symbol: "USDC",
+        mint_address: "E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF",
+      },
+      on_conflict: { constraint: assets_pkey, update_columns: mint_address },
+    },
+    underlying_asset: {
+      data: {
+        symbol: "BTC",
+        mint_address: "C6kYXcaRUMqeBF5fhg165RWU7AnpT9z92fvKNoMqjmz6",
+      },
+      on_conflict: { constraint: assets_pkey, update_columns: mint_address },
+    },
+    quote_asset_per_contract: 0.002,
+    underlying_asset_per_contract: 1,
+    data: {expiration:1622246399,optionMarketAddress:"4ju19fok1bYcARSEjkiC6eiMsZp3DSWkqM1o8E5CLogj",optionContractMintAddress:"EjRArn2hnjhVVSA4775X941UrjVCS7vgGenQ8DhTgizE",optionWriterTokenMintAddress:"5nEozN8AywnLgwQ7JoHNspi45SUwjdF4yP7k1dT2e3vq",quoteAssetMint:"E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF",quoteAssetSymbol:"USDC",underlyingAssetMint:"C6kYXcaRUMqeBF5fhg165RWU7AnpT9z92fvKNoMqjmz6",underlyingAssetSymbol:"BTC",underlyingAssetPerContract:"1000000000",quoteAssetPerContract:"2000000",serumMarketAddress:"DRyseDNeM5P8VuM8nRyiMdgmauvqzcEHx9kmp9HFLAsF"}
+  },{
+    serum_cluster: devnet,
+    serum_address: "GYBT68Jdtoh8c29Mx21ZJ8DLqfCbxULBqC99X7GiUkqB",
+    expires_at: "2021-06-25T23:59:59.000Z",
+    quote_asset: {
+      data: {
+        symbol: "BTC",
+        mint_address: "C6kYXcaRUMqeBF5fhg165RWU7AnpT9z92fvKNoMqjmz6",
+      },
+      on_conflict: { constraint: assets_pkey, update_columns: mint_address },
+    },
+    underlying_asset: {
+      data: {
+        symbol: "USDC",
+        mint_address: "E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF",
+      },
+      on_conflict: { constraint: assets_pkey, update_columns: mint_address },
+    },
+    quote_asset_per_contract: 1,
+    underlying_asset_per_contract: 0.003,
+    data: {expiration:1624665599,optionMarketAddress:"2sXRmAWkeTv4y5xqUR5L5CCMGn4G9mD76EV3RigKPGMH",optionContractMintAddress:"7z7ifhroGSqhuJ1sYcooprpEcZUzvxkMPW8MNGUzkyM8",optionWriterTokenMintAddress:"5YRcVU7t64JodnzCAeZT6hq4Cq59ige9L1cD3y9AXgsK",quoteAssetMint:"C6kYXcaRUMqeBF5fhg165RWU7AnpT9z92fvKNoMqjmz6",quoteAssetSymbol:"BTC",underlyingAssetMint:"E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF",underlyingAssetSymbol:"USDC",underlyingAssetPerContract:"3000000",quoteAssetPerContract:"1000000000",serumMarketAddress:"GYBT68Jdtoh8c29Mx21ZJ8DLqfCbxULBqC99X7GiUkqB"}
+  },{
+    serum_cluster: devnet,
+    serum_address: "B6VGQiFN7auykkDgyJfNibkqRwth7dWzxS6w6TjUxmmD",
+    expires_at: "2021-12-31T23:59:59.000Z",
+    quote_asset: {
+      data: {
+        symbol: "USDC",
+        mint_address: "E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF",
+      },
+      on_conflict: { constraint: assets_pkey, update_columns: mint_address },
+    },
+    underlying_asset: {
+      data: {
+        symbol: "BTC",
+        mint_address: "C6kYXcaRUMqeBF5fhg165RWU7AnpT9z92fvKNoMqjmz6",
+      },
+      on_conflict: { constraint: assets_pkey, update_columns: mint_address },
+    },
+    quote_asset_per_contract: 0.0035,
+    underlying_asset_per_contract: 1,
+    data: {expiration:1640995199,optionMarketAddress:"6sPqgimwmyzv6VyaJqjCDs5wPoKdSm2aVFNyXA6yEinW",optionContractMintAddress:"4F5iv3EvkEeb5fFcZibwM7oDXjuDumTN82xvzTg52rZH",optionWriterTokenMintAddress:"CMT17BVtXjpUhkwvATqZKEVTQtCTWyTarz5nWdBt9oPZ",quoteAssetMint:"E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF",quoteAssetSymbol:"USDC",underlyingAssetMint:"C6kYXcaRUMqeBF5fhg165RWU7AnpT9z92fvKNoMqjmz6",underlyingAssetSymbol:"BTC",underlyingAssetPerContract:"1000000000",quoteAssetPerContract:"3500000",serumMarketAddress:"B6VGQiFN7auykkDgyJfNibkqRwth7dWzxS6w6TjUxmmD"}
+  },{
+    serum_cluster: devnet,
+    serum_address: "DXnsSPpez3ZTFJhwC3b4LZP5ppVjBPqMSD6aaThdJ3RS",
+    expires_at: "2021-06-25T23:59:59.000Z",
+    quote_asset: {
+      data: {
+        symbol: "USDC",
+        mint_address: "E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF",
+      },
+      on_conflict: { constraint: assets_pkey, update_columns: mint_address },
+    },
+    underlying_asset: {
+      data: {
+        symbol: "BTC",
+        mint_address: "C6kYXcaRUMqeBF5fhg165RWU7AnpT9z92fvKNoMqjmz6",
+      },
+      on_conflict: { constraint: assets_pkey, update_columns: mint_address },
+    },
+    quote_asset_per_contract: 0.003,
+    underlying_asset_per_contract: 1,
+    data: {expiration:1624665599,optionMarketAddress:"A3sidWn36D1n8GM3zGWur8C4CHpkVM97Dn1pn2qJNTWU",optionContractMintAddress:"YfuJhkWa2pKM6xN1Etw1tv4m4vcibcuHjewccdQbkCD",optionWriterTokenMintAddress:"28dKh9vxTK4w3MkHpNjJ4HQ8bARbD5mfJSAUaA1svPct",quoteAssetMint:"E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF",quoteAssetSymbol:"USDC",underlyingAssetMint:"C6kYXcaRUMqeBF5fhg165RWU7AnpT9z92fvKNoMqjmz6",underlyingAssetSymbol:"BTC",underlyingAssetPerContract:"1000000000",quoteAssetPerContract:"3000000",serumMarketAddress:"DXnsSPpez3ZTFJhwC3b4LZP5ppVjBPqMSD6aaThdJ3RS"}
+  },{
+    serum_cluster: devnet,
+    serum_address: "7x7YtL5YR1dUn2kTQfS75GP27ZngzWPfwnS99DvRAMeS",
+    expires_at: "2021-06-25T23:59:59.000Z",
+    quote_asset: {
+      data: {
+        symbol: "USDC",
+        mint_address: "E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF",
+      },
+      on_conflict: { constraint: assets_pkey, update_columns: mint_address },
+    },
+    underlying_asset: {
+      data: {
+        symbol: "BTC",
+        mint_address: "C6kYXcaRUMqeBF5fhg165RWU7AnpT9z92fvKNoMqjmz6",
+      },
+      on_conflict: { constraint: assets_pkey, update_columns: mint_address },
+    },
+    quote_asset_per_contract: 0.004,
+    underlying_asset_per_contract: 1,
+    data: {expiration:1624665599,optionMarketAddress:"Adu8tHdPcGaaXhQCJs2MYDuEvjMwGT21wGvix1zwKyac",optionContractMintAddress:"BdGdaR2KV4ySqPSw9gKN2ED6d7TNCHdqva4dwYa7CK1q",optionWriterTokenMintAddress:"DGhsirz1cGqo9xXTcujkbpAju6C8Admztzm43U5pR6m4",quoteAssetMint:"E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF",quoteAssetSymbol:"USDC",underlyingAssetMint:"C6kYXcaRUMqeBF5fhg165RWU7AnpT9z92fvKNoMqjmz6",underlyingAssetSymbol:"BTC",underlyingAssetPerContract:"1000000000",quoteAssetPerContract:"4000000",serumMarketAddress:"7x7YtL5YR1dUn2kTQfS75GP27ZngzWPfwnS99DvRAMeS"}
+  },{
+    serum_cluster: devnet,
+    serum_address: "2wriXhTCsUwBvfyYch8X6J8pLW797Vm8Thsz4xRZh1Yb",
+    expires_at: "2021-12-31T23:59:59.000Z",
+    quote_asset: {
+      data: {
+        symbol: "USDC",
+        mint_address: "E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF",
+      },
+      on_conflict: { constraint: assets_pkey, update_columns: mint_address },
+    },
+    underlying_asset: {
+      data: {
+        symbol: "BTC",
+        mint_address: "C6kYXcaRUMqeBF5fhg165RWU7AnpT9z92fvKNoMqjmz6",
+      },
+      on_conflict: { constraint: assets_pkey, update_columns: mint_address },
+    },
+    quote_asset_per_contract: 0.007,
+    underlying_asset_per_contract: 1,
+    data: {expiration:1640995199,optionMarketAddress:"BhMKjhLq88rdUSbpWN6kimbLbKm8vEKLhmirUAPExebX",optionContractMintAddress:"ARcyHtmeTQAqTNEFrKmwtxdzwZaUYJTF8YpwCsWMhXbV",optionWriterTokenMintAddress:"Hae8dtyoEizvPjXxbA9MdwmtcZ1Bq57uvAthsP4F157o",quoteAssetMint:"E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF",quoteAssetSymbol:"USDC",underlyingAssetMint:"C6kYXcaRUMqeBF5fhg165RWU7AnpT9z92fvKNoMqjmz6",underlyingAssetSymbol:"BTC",underlyingAssetPerContract:"1000000000",quoteAssetPerContract:"7000000",serumMarketAddress:"2wriXhTCsUwBvfyYch8X6J8pLW797Vm8Thsz4xRZh1Yb"}
+  },{
+    serum_cluster: devnet,
+    serum_address: "BU9LoR1PrJfUkxtxdCVeWB7qWwGa7V7Rv5g2UssrfeTG",
+    expires_at: "2021-05-28T23:59:59.000Z",
+    quote_asset: {
+      data: {
+        symbol: "USDC",
+        mint_address: "E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF",
+      },
+      on_conflict: { constraint: assets_pkey, update_columns: mint_address },
+    },
+    underlying_asset: {
+      data: {
+        symbol: "BTC",
+        mint_address: "C6kYXcaRUMqeBF5fhg165RWU7AnpT9z92fvKNoMqjmz6",
+      },
+      on_conflict: { constraint: assets_pkey, update_columns: mint_address },
+    },
+    quote_asset_per_contract: 0.0025,
+    underlying_asset_per_contract: 1,
+    data: {expiration:1622246399,optionMarketAddress:"FR64u8GKLGvTyHSwabu1opHnHCStPE2NXnsT5H2HACF2",optionContractMintAddress:"3Bb6mmo2SXdhQovg95KUL253wCxNop2ekGLKiP3ftyQ9",optionWriterTokenMintAddress:"2w3g7vxtT6MDtd8A4iimof5ehgo11Cin1BKNWpKmvi4e",quoteAssetMint:"E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF",quoteAssetSymbol:"USDC",underlyingAssetMint:"C6kYXcaRUMqeBF5fhg165RWU7AnpT9z92fvKNoMqjmz6",underlyingAssetSymbol:"BTC",underlyingAssetPerContract:"1000000000",quoteAssetPerContract:"2500000",serumMarketAddress:"BU9LoR1PrJfUkxtxdCVeWB7qWwGa7V7Rv5g2UssrfeTG"}
+  },{
+    serum_cluster: devnet,
+    serum_address: "9ij6fESTUQ9QdJHGd3JPu4gdnPkhtHYRzo1VNZmQ5XKQ",
+    expires_at: "2021-05-28T23:59:59.000Z",
+    quote_asset: {
+      data: {
+        symbol: "USDC",
+        mint_address: "E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF",
+      },
+      on_conflict: { constraint: assets_pkey, update_columns: mint_address },
+    },
+    underlying_asset: {
+      data: {
+        symbol: "BTC",
+        mint_address: "C6kYXcaRUMqeBF5fhg165RWU7AnpT9z92fvKNoMqjmz6",
+      },
+      on_conflict: { constraint: assets_pkey, update_columns: mint_address },
+    },
+    quote_asset_per_contract: 0.003,
+    underlying_asset_per_contract: 1,
+    data: {expiration:1622246399,optionMarketAddress:"G2ejLpEUVa1dRJkcBsiHxpjE2WKWqAanPnf2sxGAoPjd",optionContractMintAddress:"CNcMeWtzdMyc2aYmepWeUJgzVtgzhGQEskZ8cHLbH3nK",optionWriterTokenMintAddress:"A5uX7fG3MjvvUhvNei5RzX1Hk1VMEt5pMFPRfty2EKWu",quoteAssetMint:"E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF",quoteAssetSymbol:"USDC",underlyingAssetMint:"C6kYXcaRUMqeBF5fhg165RWU7AnpT9z92fvKNoMqjmz6",underlyingAssetSymbol:"BTC",underlyingAssetPerContract:"1000000000",quoteAssetPerContract:"3000000",serumMarketAddress:"9ij6fESTUQ9QdJHGd3JPu4gdnPkhtHYRzo1VNZmQ5XKQ"}
+  },{
+    serum_cluster: devnet,
+    serum_address: "49vNyNhxq9wp96hYtKHtGM6dvbVPzH31WMzMmNwfdEEr",
+    expires_at: "2021-12-31T23:59:59.000Z",
+    quote_asset: {
+      data: {
+        symbol: "USDC",
+        mint_address: "E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF",
+      },
+      on_conflict: { constraint: assets_pkey, update_columns: mint_address },
+    },
+    underlying_asset: {
+      data: {
+        symbol: "BTC",
+        mint_address: "C6kYXcaRUMqeBF5fhg165RWU7AnpT9z92fvKNoMqjmz6",
+      },
+      on_conflict: { constraint: assets_pkey, update_columns: mint_address },
+    },
+    quote_asset_per_contract: 0.005,
+    underlying_asset_per_contract: 1,
+    data: {expiration:1640995199,optionMarketAddress:"3ZznUPbcX7YWXWmqVsSvePjzrH7dibHpih1LeAoDq136",optionContractMintAddress:"E3UpRswXYqWsnanotsKrbRq328g8KKRa4hYVeJ1jcYZS",optionWriterTokenMintAddress:"5pnesCA7PAVy6wrd3xbvSiM2BBiYUuXckF3PNLmyH5mG",quoteAssetMint:"E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF",quoteAssetSymbol:"USDC",underlyingAssetMint:"C6kYXcaRUMqeBF5fhg165RWU7AnpT9z92fvKNoMqjmz6",underlyingAssetSymbol:"BTC",underlyingAssetPerContract:"1000000000",quoteAssetPerContract:"5000000",serumMarketAddress:"49vNyNhxq9wp96hYtKHtGM6dvbVPzH31WMzMmNwfdEEr"}
+  },{
+    serum_cluster: devnet,
+    serum_address: "A1puENk4nxMwCPhtT9HT28nDU8CTE5uSFLL7RhdrPD4s",
+    expires_at: "2021-12-31T23:59:59.000Z",
+    quote_asset: {
+      data: {
+        symbol: "USDC",
+        mint_address: "E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF",
+      },
+      on_conflict: { constraint: assets_pkey, update_columns: mint_address },
+    },
+    underlying_asset: {
+      data: {
+        symbol: "BTC",
+        mint_address: "C6kYXcaRUMqeBF5fhg165RWU7AnpT9z92fvKNoMqjmz6",
+      },
+      on_conflict: { constraint: assets_pkey, update_columns: mint_address },
+    },
+    quote_asset_per_contract: 0.006,
+    underlying_asset_per_contract: 1,
+    data: {expiration:1640995199,optionMarketAddress:"Gt2WULSBQyV6wYfcNq9mVWXzLM2HFJhHQhfUbQFZftEK",optionContractMintAddress:"HUEkoTLrAiX2BCw9qn5HdRYNgY6kbmtXyMa6ZNr5HoyW",optionWriterTokenMintAddress:"HqgQ2hRZsvxgLshL4K6jh1WL5pZxm5g9vVinM84f1C9V",quoteAssetMint:"E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF",quoteAssetSymbol:"USDC",underlyingAssetMint:"C6kYXcaRUMqeBF5fhg165RWU7AnpT9z92fvKNoMqjmz6",underlyingAssetSymbol:"BTC",underlyingAssetPerContract:"1000000000",quoteAssetPerContract:"6000000",serumMarketAddress:"A1puENk4nxMwCPhtT9HT28nDU8CTE5uSFLL7RhdrPD4s"}
+  },{
+    serum_cluster: devnet,
+    serum_address: "4tzMmybJoFvtFwrJMRG76LPxVgyNSPSa1gAiXQYpVY6W",
+    expires_at: "2021-05-28T23:59:59.000Z",
+    quote_asset: {
+      data: {
+        symbol: "BTC",
+        mint_address: "C6kYXcaRUMqeBF5fhg165RWU7AnpT9z92fvKNoMqjmz6",
+      },
+      on_conflict: { constraint: assets_pkey, update_columns: mint_address },
+    },
+    underlying_asset: {
+      data: {
+        symbol: "USDC",
+        mint_address: "E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF",
+      },
+      on_conflict: { constraint: assets_pkey, update_columns: mint_address },
+    },
+    quote_asset_per_contract: 1,
+    underlying_asset_per_contract: 0.004,
+    data: {expiration:1622246399,optionMarketAddress:"FQnh2opicqVrpvDt7dewpMD2LStjSZdqVBihpcBVxesQ",optionContractMintAddress:"FkCBtEEf9mYSP2vigcbnAVmmLqh5hSzxa6nXc2N4zn4h",optionWriterTokenMintAddress:"F9BNFS8LfweF5ALMa4d3K7t28LqiZ2h2J5cxzg9zhe81",quoteAssetMint:"C6kYXcaRUMqeBF5fhg165RWU7AnpT9z92fvKNoMqjmz6",quoteAssetSymbol:"BTC",underlyingAssetMint:"E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF",underlyingAssetSymbol:"USDC",underlyingAssetPerContract:"4000000",quoteAssetPerContract:"1000000000",serumMarketAddress:"4tzMmybJoFvtFwrJMRG76LPxVgyNSPSa1gAiXQYpVY6W"}
+  }],
+    on_conflict: { constraint: markets_serum_address_key, update_columns: data }
+  ) {
+    returning {
+      id
+    }
+  }
+}
