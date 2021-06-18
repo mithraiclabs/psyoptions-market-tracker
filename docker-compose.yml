@@ -19,9 +19,8 @@ services:
       - 8080:8080
     depends_on:
       - timescaledb
-    volumes:
-      - "./hasura/metadata:/hasura-metadata"
-      - "./hasura/migrations:/hasura-migrations"
+    build:
+      context: ./hasura
     restart: always
     environment:
       HASURA_GRAPHQL_CORS_DOMAIN: "*"
