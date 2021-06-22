@@ -1,6 +1,9 @@
 Parameters:
-  Stage:
+  ResourcePrefix:
+    Description: Name used to prefix most resources
     Type: String
+    Default: psyoptions-tracker
+    AllowedPattern : "[a-z\\-]*"
   ContainerPort:
     Type: Number
   HasuraImageURI:
@@ -11,15 +14,45 @@ Parameters:
     Type: String
   DashboardImageURI:
     Type: String
+  SerumVialContainerPort:
+    Type: Number
+    Default: 8000
+  RpcUrl:
+    Type: String
+    Default: https://api.devnet.solana.com
   HostedZoneId:
     Type: String
-  DomainName:
-    Description: The fully qualified domain name the DNS record sets belong to
+  HasuraDomainName:
+    Description: The fully qualified domain name the Hasura DNS record sets belong to
     Type: String
     Default: www.example.com
-  DomainCertificateArn:
-    Description: The ARN of the SSL/TLS certificate to use for the secure load balancer listener
+  HasuraDomainCertificateArn:
+    Description: The ARN of the SSL/TLS certificate to use for the secure the Hasura load balancer listener
     Type: String
+  Ec2KeyNameParam:
+    Description: The name of the EC2 keypair that is default added to instances
+    Type: String
+
+Mappings: 
+  RegionMap:
+    us-east-1: 
+      "HasuraAmi": "ami-0313b4bfed0594a99"
+    us-east-2: 
+      "HasuraAmi": "ami-0c5ddf9bfd0e62c37"
+    us-west-1: 
+      "HasuraAmi": "ami-0e989ea8765644217"
+    us-west-2: 
+      "HasuraAmi": "ami-0623161c84070eab1"
+    eu-central-1:
+      "HasuraAmi": "ami-01a81696798f7f978"
+    eu-north-1:
+      "HasuraAmi": "ami-0311515c2f7729997"
+    eu-west-1: 
+      "HasuraAmi": "ami-0e0485cba3f4886ba"
+    eu-west-2: 
+      "HasuraAmi": "ami-04cb5c2cf3fadd9dd"
+    eu-west-3: 
+      "HasuraAmi": "ami-04cb5c2cf3fadd9dd"
 
 Resources:
   # Create CloudWatch LogGroup for the task logs
@@ -27,14 +60,14 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName:
-        !Join ['-', [!Ref Stage, !Ref 'AWS::AccountId', 'Container']]
+        !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Container']]
       RetentionInDays: 7
 
   # Create an ECS Cluster
   Cluster:
     Type: AWS::ECS::Cluster
     Properties:
-      ClusterName: !Join ['-', [!Ref Stage, !Ref 'AWS::AccountId', 'Cluster']]
+      ClusterName: !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Cluster']]
       ClusterSettings:
         - Name: containerInsights
           Value: enabled
@@ -55,13 +88,13 @@ Resources:
       VpcId: !Ref VPC
       AvailabilityZone: !Join ['', [!Ref 'AWS::Region', 'a']]
 
-  # Create a Subnet
-  SubnetB:
+  # Create a Private Subnet
+  PrivateSubnetA:
     Type: AWS::EC2::Subnet
     Properties:
       CidrBlock: 172.10.2.0/24
       VpcId: !Ref VPC
-      AvailabilityZone: !Join ['', [!Ref 'AWS::Region', 'b']]
+      AvailabilityZone: !Join ['', [!Ref 'AWS::Region', 'a']]
 
   # Create a route table to allow access to internet
   PublicRouteTable:
@@ -85,13 +118,6 @@ Resources:
       RouteTableId: !Ref PublicRouteTable
       SubnetId: !Ref SubnetA
 
-  # Attach Public Route to SubnetB
-  SubnetBPublicRouteAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      RouteTableId: !Ref PublicRouteTable
-      SubnetId: !Ref SubnetB
-
   # Create an Internet Gateway
   InternetGateway:
     Type: AWS::EC2::InternetGateway
@@ -108,7 +134,7 @@ Resources:
     Type: AWS::IAM::Role
     Properties:
       RoleName:
-        !Join ['-', [!Ref Stage, !Ref 'AWS::AccountId', 'ExecutionRole']]
+        !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'ExecutionRole']]
       AssumeRolePolicyDocument:
         Statement:
           - Effect: Allow
@@ -118,8 +144,72 @@ Resources:
       ManagedPolicyArns:
         - 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
 
-  # Create a TaskDefinition with container details
-  TaskDefinition:
+  TimescaleSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VPC
+      GroupDescription: Security group for ingress SSH and Timescale traffic
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: "-1"
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: 172.10.0.0/16
+      SecurityGroupEgress:
+        - IpProtocol: "-1"
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: 172.10.0.0/16
+
+
+  # Create the Timescale EC2 instance
+  # TODO figure out how to initialize the database with a user, name, and password
+  TimescaleEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties: 
+      Affinity: String
+      # AvailabilityZone: String
+      BlockDeviceMappings: 
+      # TODO re-evaluate block device for production work load
+        - DeviceName: "/dev/sdm"
+          Ebs: 
+            DeleteOnTermination: false
+            SnapshotId: String
+            VolumeSize: 20
+            VolumeType: gp3
+      EbsOptimized: true
+      # IamInstanceProfile: String
+      ImageId: !FindInMap [ RegionMap, !Ref AWS::Region, 'HasuraAmi' ]
+      InstanceType: t3.small
+      KeyName: !Ref Ec2KeyNameParam
+      # Monitoring: Boolean
+      NetworkInterfaces: 
+        - AssociatePublicIpAddress: false
+          Description: String
+          DeviceIndex: 0
+          GroupSet: 
+            - !Ref TimescaleSecurityGroup
+          SubnetId: !Ref PrivateSubnetA
+      # Tune the Postgres configuration for timescale on the current instance size
+      UserData:
+        Fn::Base64:
+          Fn::Join: [
+            "",
+            [
+              "#!/bin/bash -xe\n",
+              "timescaledb-tune --yes"
+            ]
+          ]
+
+  # Create the Hasura TaskDefinition with container details
+  HasuraTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
       Memory: 1024
@@ -130,44 +220,36 @@ Resources:
       TaskRoleArn: !Ref ExecutionRole
       ExecutionRoleArn: !Ref ExecutionRole
       ContainerDefinitions:
-        - Name: !Join ['-', [!Ref Stage, !Ref 'AWS::AccountId', 'Container']]
-          Image: !Ref ImageURI
+        - Name: !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Hasura']]
+          Image: !Ref HasuraImageURI
           Cpu: 512
           Memory: 1024
           ReadonlyRootFilesystem: false
           Environment:
             - Name: PORT
-              Value: !Ref ContainerPort
-            - Name: APP_ENABLED
+              Value: !Ref SerumVialContainerPort
+            - Name: HASURA_GRAPHQL_CORS_DOMAIN
+              Value: "*"
+              # TODO relies on the Timescale infrastructure
+            - Name: HASURA_GRAPHQL_DATABASE_URL
+              Value: ''
+            - Name: HASURA_GRAPHQL_DEV_MODE
+              Value: false
+            - Name: HASURA_GRAPHQL_ENABLE_CONSOLE
               Value: true
-            - Name: DEVNET_PROGRAM_ID
-              Value: GDvqQy3FkDB2wyNwgZGp5YkmRMUmWbhNNWDMYKbLSZ5N
-            - Name: DEVNET_DEX_PROGRAM_ID
-              Value: DESVgJVGajEgKGXhb6XmqDHGz3VjdgP7rEVESBgxmroY
-            - Name: MAINNET_DEX_PROGRAM_ID
-              Value: EUqojwWA2rd19FZrzeBncJsm38Jm1hEhE3zsmX3bRc2o
-            - Name: APP_PASSWORD
-              Value: 89fe0dbb9a8e940c4e88f40ae9738db57dbe38a8
-            - Name: APP_PASSWORD_PROTECTED
-              Value: true
-            - Name: SENTRY_ENVIRONMENT
-              Value: staging
-            - Name: DEVNET_FAUCET_USDC
-              Value: E6wQSMPGqHn7dqEMeWcSVfjdkwd8ED5CncQ9BtMNGtUG
-            - Name: DEVNET_FAUCET_BTC
-              Value: 97z3NzcDxqRMyE7F73PuHEmAbA72S7eDopjhe7GTymTk
-            - Name: DEVNET_FAUCET_PSY
-              Value: 7jJJnHWagPPG544FtxSVp8eD52FwCsARcqqup1q3XVio
+            - Name: HASURA_GRAPHQL_ENABLED_LOG_TYPES
+              Value: startup, http-log, webhook-log, websocket-log, query-log
           PortMappings:
-            - ContainerPort: !Ref ContainerPort
-              HostPort: !Ref ContainerPort
+            - ContainerPort: !Ref SerumVialContainerPort
+              HostPort: !Ref SerumVialContainerPort
           LogConfiguration:
             LogDriver: awslogs
             Options:
               awslogs-region: !Ref 'AWS::Region'
               awslogs-group:
-                !Join ['-', [!Ref Stage, !Ref 'AWS::AccountId', 'Container']]
-              awslogs-stream-prefix: 'logs'
+                !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Container']]
+              awslogs-stream-prefix: 'Hasura'
+
   # Creat a security group for load balancer and open port 80 in bound from internet
   LoadBalancerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -175,7 +257,7 @@ Resources:
       GroupDescription:
         !Join [
           '-',
-          [!Ref Stage, !Ref 'AWS::AccountId', 'LoadBalancerSecurityGroup'],
+          [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'LoadBalancerSecurityGroup'],
         ]
       VpcId: !Ref VPC
       SecurityGroupIngress:
@@ -195,7 +277,7 @@ Resources:
       GroupDescription:
         !Join [
           '-',
-          [!Ref Stage, !Ref 'AWS::AccountId', 'ContainerSecurityGroup'],
+          [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'ContainerSecurityGroup'],
         ]
       VpcId: !Ref VPC
       SecurityGroupIngress:
@@ -214,14 +296,13 @@ Resources:
         - !Ref LoadBalancerSecurityGroup
       Subnets:
         - !Ref SubnetA
-        - !Ref SubnetB
       Type: application
 
   # Create a TargetGroup for HTTP port 80
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      Name: !Join ['-', [!Ref Stage, !Ref 'AWS::AccountId', 'TargetGroup']]
+      Name: !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'TargetGroup']]
       Port: 80
       Protocol: HTTP
       TargetType: ip
@@ -279,9 +360,9 @@ Resources:
       - HttpsLoadBalancerListener
     Properties:
       ServiceName:
-        !Join ['-', [!Ref Stage, !Ref 'AWS::AccountId', 'ECSService']]
+        !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'ECSService']]
       Cluster: !Ref Cluster
-      TaskDefinition: !Ref TaskDefinition
+      TaskDefinition: !Ref HasuraTaskDefinition
       DesiredCount: 1
       LaunchType: FARGATE
       EnableExecuteCommand: true
@@ -290,11 +371,10 @@ Resources:
           AssignPublicIp: ENABLED
           Subnets:
             - !Ref SubnetA
-            - !Ref SubnetB
           SecurityGroups:
             - !Ref ContainerSecurityGroup
       LoadBalancers:
         - ContainerName:
-            !Join ['-', [!Ref Stage, !Ref 'AWS::AccountId', 'Container']]
+            !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Container']]
           ContainerPort: !Ref ContainerPort
           TargetGroupArn: !Ref TargetGroup

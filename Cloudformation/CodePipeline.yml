@@ -28,16 +28,20 @@ Parameters:
   # KmsArn:
   #   Description: The ARN of the Key in Key Manager that's used to decrypt secrets
   #   Type: String
-  # HostedZoneId:
-  #   Description: The ID of the Hosted zone where the DNS record sets should be created
-  #   Type: String
-  # DomainName:
-  #   Description: The fully qualified domain name the DNS record sets belong to
-  #   Type: String
-  #   Default: staging.psyoptions.io
-  # DomainCertificateArn:
-  #   Description: The ARN of the SSL/TLS certificate to use for the secure load balancer listener
-  #   Type: String
+  HostedZoneId:
+    Description: The ID of the Hosted zone where the DNS record sets should be created
+    Type: String
+  HasuraDomainName:
+    Description: The fully qualified domain name the Hasura DNS record sets belong to
+    Type: String
+    Default: www.example.com
+  HasuraDomainCertificateArn:
+    Description: The ARN of the SSL/TLS certificate to use for the secure the Hasura load balancer listener
+    Type: String
+  Ec2KeyNameParam:
+    Description: The name of the EC2 keypair that is default added to instances
+    Type: String
+
 Resources:
   # Create an ECR Repository to store docker images
   HasuraECRRepository:
@@ -409,43 +413,44 @@ Resources:
                 ProjectName: !Ref DashboardBuildProject
               RunOrder: 1
 
-        # # Deploy the project by executing Fargate-Cluster.yml file in the Source code with Cloudformation.
-        # - Name: Deploy
-        #   Actions:
-        #     - Name: Deploy
-        #       ActionTypeId:
-        #         Category: Deploy
-        #         Owner: AWS
-        #         Version: 1
-        #         Provider: CloudFormation
-        #       InputArtifacts:
-        #         - Name: source-output-artifacts
-        #         - Name: hasura-output-artifacts
-        #         - Name: serum-vial-output-artifacts
-        #         - Name: listener-output-artifacts
-        #         - Name: dashboard-output-artifacts
-        #       Configuration:
-        #         ActionMode: CREATE_UPDATE
-        #         Capabilities: CAPABILITY_NAMED_IAM
-        #         # Pass parameter values to Fargate-Cluster.yml for deployment
-        #         ParameterOverrides: !Sub |
-        #           {
-        #             "HasuraImageURI" : { "Fn::GetParam" : ["hasura-output-artifacts", "imagedefinitions.json", "ImageURI"] },
-        #             "SerumVialImageURI" : { "Fn::GetParam" : ["serum-vial-output-artifacts", "imagedefinitions.json", "ImageURI"] },
-        #             "ListenerImageURI" : { "Fn::GetParam" : ["listener-output-artifacts", "imagedefinitions.json", "ImageURI"] },
-        #             "DashboardImageURI" : { "Fn::GetParam" : ["dashboard-output-artifacts", "imagedefinitions.json", "ImageURI"] },
-        #             "Stage":  "${Stage}",
-        #             "ContainerPort": "${ContainerPort}",
-        #             "HostedZoneId": "${HostedZoneId}",
-        #             "DomainName": "${DomainName}",
-        #             "DomainCertificateArn": "${DomainCertificateArn}"
-        #           }
-        #         RoleArn:
-        #           Fn::GetAtt: [CloudformationExecutionRole, Arn]
-        #         StackName:
-        #           !Join [
-        #             '-',
-        #             [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'FargateECSCluster'],
-        #           ]
-        #         TemplatePath: source-output-artifacts::Cloudformation/Fargate-Cluster.yml
-        #       RunOrder: 1
+        # Deploy the project by executing All-The-Machines.yml file in the Source code with Cloudformation.
+        - Name: Deploy
+          Actions:
+            - Name: Deploy
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: CloudFormation
+              InputArtifacts:
+                - Name: source-output-artifacts
+                - Name: hasura-output-artifacts
+                - Name: serum-vial-output-artifacts
+                - Name: listener-output-artifacts
+                - Name: dashboard-output-artifacts
+              Configuration:
+                ActionMode: CREATE_UPDATE
+                Capabilities: CAPABILITY_NAMED_IAM
+                # Pass parameter values to All-The-Machines.yml for deployment
+                ParameterOverrides: !Sub |
+                  {
+                    "HasuraImageURI" : { "Fn::GetParam" : ["hasura-output-artifacts", "imagedefinitions.json", "ImageURI"] },
+                    "SerumVialImageURI" : { "Fn::GetParam" : ["serum-vial-output-artifacts", "imagedefinitions.json", "ImageURI"] },
+                    "ListenerImageURI" : { "Fn::GetParam" : ["listener-output-artifacts", "imagedefinitions.json", "ImageURI"] },
+                    "DashboardImageURI" : { "Fn::GetParam" : ["dashboard-output-artifacts", "imagedefinitions.json", "ImageURI"] },
+                    "Stage":  "${Stage}",
+                    "ContainerPort": "${ContainerPort}",
+                    "HostedZoneId": "${HostedZoneId}",
+                    "HasuraDomainName": "${HasuraDomainName}",
+                    "HasuraDomainCertificateArn": "${HasuraDomainCertificateArn}",
+                    "Ec2KeyNameParam": "${Ec2KeyNameParam}"
+                  }
+                RoleArn:
+                  Fn::GetAtt: [CloudformationExecutionRole, Arn]
+                StackName:
+                  !Join [
+                    '-',
+                    [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'FargateECSCluster'],
+                  ]
+                TemplatePath: source-output-artifacts::Cloudformation/All-The-Machines.yml
+              RunOrder: 1
