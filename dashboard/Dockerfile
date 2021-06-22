@@ -11,6 +11,6 @@ ENV EXT_HOST=${EXT_HOST}
 
 RUN npm install && npm run build
 
-FROM flashspys/nginx-static
+FROM public.ecr.aws/s6m7j8l9/flashspys/nginx-static
 RUN apk update && apk upgrade
 COPY --from=0 /app/dist /static
