@@ -1,4 +1,4 @@
-FROM hayd/alpine-deno:latest
+FROM public.ecr.aws/s6m7j8l9/hayd/alpine-deno:latest
 
 WORKDIR /app
 

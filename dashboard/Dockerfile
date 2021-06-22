@@ -1,4 +1,4 @@
-FROM node:15-slim
+FROM public.ecr.aws/s6m7j8l9/node/node:15-slim
 
 WORKDIR /app
 COPY . /app
