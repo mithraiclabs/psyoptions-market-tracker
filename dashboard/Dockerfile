@@ -1,7 +1,7 @@
-FROM public.ecr.aws/s6m7j8l9/node/node:15-slim
+FROM public.ecr.aws/s6m7j8l9/node:15-slim
 
 WORKDIR /app
-COPY . /app
+COPY ./dashboard /app
 
 ARG GRAPHQL_URL
 ARG EXT_HOST
