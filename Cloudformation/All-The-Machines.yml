@@ -202,7 +202,7 @@ Resources:
         - IpProtocol: "-1"
           FromPort: 0
           ToPort: 65535
-          CidrIp: 172.10.0.0/16
+          CidrIp: 0.0.0.0/0
 
   TimescaleIamInstanceProfile:
     Type: AWS::IAM::InstanceProfile
