@@ -7,6 +7,9 @@ Parameters:
   HasuraContainerPort:
     Type: Number
     Default: 8080
+  TimescaleContainerPort:
+    Type: Number
+    Default: 5432
   HasuraImageURI:
     Type: String
   SerumVialImageURI:
@@ -156,6 +159,29 @@ Resources:
       ManagedPolicyArns:
         - 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
 
+  # Create namespace for AWS Service Discovery
+  PrivateNamespace:
+    Type: AWS::ServiceDiscovery::PrivateDnsNamespace
+    Properties:
+        Name: internal.psyoptions.io
+        Vpc: !Ref VPC
+  
+  DiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties: 
+      Description: Discovery Service for the PsyOptions Market Tracker
+      DnsConfig:
+        RoutingPolicy: MULTIVALUE
+        DnsRecords:
+          - TTL: 60
+            Type: A
+          - TTL: 60
+            Type: SRV
+      HealthCheckCustomConfig: 
+        FailureThreshold: 1
+      Name: !Join ['-', [!Ref ResourcePrefix, 'discovery-service']]
+      NamespaceId: !Ref PrivateNamespace
+
   TimescaleSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -180,61 +206,39 @@ Resources:
           ToPort: 65535
           CidrIp: 172.10.0.0/16
 
-
-  # Create the Timescale EC2 instance
-  TimescaleEC2Instance:
-    Type: AWS::EC2::Instance
-    Properties: 
-      BlockDeviceMappings: 
-      # TODO re-evaluate block device for production work load
-        - DeviceName: "/dev/sdm"
-          Ebs: 
-            DeleteOnTermination: false
-            VolumeSize: 20
-            VolumeType: gp3
-      EbsOptimized: true
-      # IamInstanceProfile: String
-      ImageId: !FindInMap [ RegionMap, !Ref AWS::Region, 'TimescaleAmi' ]
-      InstanceType: t3.small
-      KeyName: !Ref Ec2KeyNameParam
-      # Monitoring: Boolean
-      # TODO move the instance to a private subnet after setup and configuration is verified.
-      NetworkInterfaces: 
-        - AssociatePublicIpAddress: true
-          DeviceIndex: 0
-          GroupSet: 
-            - !Ref TimescaleSecurityGroup
-          SubnetId: !Ref SubnetA
-      # Tune the Postgres configuration for timescale on the current instance size
-      UserData:
-        Fn::Base64:
-          Fn::Join: [
-            "",
-            [
-              "#!/bin/bash -xe\n",
-              # TODO use secret manager for sensitive environment variables
-              "export POSTGRES_USER=tracker\n",
-              "export POSTGRES_DB=serum_markets\n",
-              "export POSTGRES_PASSWORD=password\n",
-              "create_sql=`mktemp`\n",
-              "cat <<EOF >${create_sql}\n",
-              "CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;\n",
-              "EOF\n",
-              # Create the postgres user if it doesn't exists
-              "psql -tc \"SELECT 1 FROM pg_user WHERE usename = '${POSTGRES_USER}'\" | grep -q 1 || psql -c \"CREATE USER ${POSTGRES_USER} WITH PASSWORD '${POSTGRES_PASSWORD}';\"\n",
-              # initialize timescale extension on all databases
-              "psql -U \"${POSTGRES_USER}\" postgres -f ${create_sql}\n",
-              "psql -U \"${POSTGRES_USER}\" template1 -f ${create_sql}\n",
-              # Create the new database if it doesn't exists
-              "psql -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = '${POSTGRES_DB}'\" | grep -q 1 | psql -U ${POSTGRES_USER} -c \"CREATE DATABASE ${POSTGRES_DB}\"\n",
-              # Add Timescale extension to database if it doesn't exists yet
-              "if [ \"${POSTGRES_DB:-postgres}\" != 'postgres' ]; then\n",
-              "psql -U \"${POSTGRES_USER}\" \"${POSTGRES_DB}\" -f ${create_sql}\n",
-              "fi\n",
-              # Auto tune PG for timescale and the current instance type
-              "timescaledb-tune --yes\n",
-            ]
-          ]
+  # Create the Hasura TaskDefinition with container details
+  TimescaleTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - 'EC2'
+      TaskRoleArn: !Ref ExecutionRole
+      ExecutionRoleArn: !Ref ExecutionRole
+      ContainerDefinitions:
+        - Name: !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Hasura']]
+          Image: public.ecr.aws/s6m7j8l9/timescale/timescaledb:2.2.0-pg13
+          ReadonlyRootFilesystem: false
+          Environment:
+            - Name: PORT
+              Value: !Ref TimescaleContainerPort
+            # TODO replace with secrests / parameters
+            - Name: POSTGRES_DB
+              Value: serum_markets
+            - Name: POSTGRES_PASSWORD
+              Value: password
+            - Name: POSTGRES_USER
+              Value: tracker
+          PortMappings:
+            - ContainerPort: !Ref TimescaleContainerPort
+              HostPort: !Ref TimescaleContainerPort
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: !Ref 'AWS::Region'
+              awslogs-group:
+                !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Container']]
+              awslogs-stream-prefix: 'Timescale'
 
   # Create the Hasura TaskDefinition with container details
   HasuraTaskDefinition:
@@ -299,13 +303,29 @@ Resources:
           CidrIp: 0.0.0.0/0
 
   # Creat a security group for Containers and open in bound Container port from Load balancer security group to the Container
-  ContainerSecurityGroup:
+  TimescaleContainerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription:
         !Join [
           '-',
-          [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'ContainerSecurityGroup'],
+          [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Timescale ContainerSecurityGroup'],
+        ]
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: !Ref TimescaleContainerPort
+          ToPort: !Ref TimescaleContainerPort
+          CidrIp: 172.10.0.0/16
+
+  # Creat a security group for Containers and open in bound Container port from Load balancer security group to the Container
+  HasuraContainerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription:
+        !Join [
+          '-',
+          [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Hasura ContainerSecurityGroup'],
         ]
       VpcId: !Ref VPC
       SecurityGroupIngress:
@@ -375,15 +395,33 @@ Resources:
       Name: !Ref HasuraDomainName
       Type: A
 
+  # Create a ECS Service for the Timescale DB task
+  TimescaleECSService:
+    Type: AWS::ECS::Service
+    Properties:
+      ServiceName: timescale
+      Cluster: !Ref Cluster
+      TaskDefinition: !Ref TimescaleTaskDefinition
+      DesiredCount: 1
+      LaunchType: EC2
+      EnableExecuteCommand: true
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets:
+            - !Ref SubnetA
+          SecurityGroups:
+            - !Ref TimescaleContainerSecurityGroup
+
   # Create an ECS Service and add created Cluster, TaskDefintion, Subnets, TargetGroup and SecurityGroup
-  ECSService:
+  HasuraECSService:
     Type: AWS::ECS::Service
     DependsOn:
       - LoadBalancerListener
       - HttpsLoadBalancerListener
+      - TimescaleECSService
     Properties:
-      ServiceName:
-        !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'ECSService']]
+      ServiceName: hasura
       Cluster: !Ref Cluster
       TaskDefinition: !Ref HasuraTaskDefinition
       DesiredCount: 1
@@ -396,7 +434,7 @@ Resources:
             - !Ref SubnetA
             - !Ref SubnetB
           SecurityGroups:
-            - !Ref ContainerSecurityGroup
+            - !Ref HasuraContainerSecurityGroup
       LoadBalancers:
         - ContainerName:
             !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Hasura']]
