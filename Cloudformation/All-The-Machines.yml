@@ -85,6 +85,13 @@ Resources:
       CidrBlock: 172.10.1.0/24
       VpcId: !Ref VPC
       AvailabilityZone: !Join ['', [!Ref 'AWS::Region', 'a']]
+  # Create a Subnet
+  SubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 172.10.2.0/24
+      VpcId: !Ref VPC
+      AvailabilityZone: !Join ['', [!Ref 'AWS::Region', 'b']]
 
   # Create a Private Subnet
   PrivateSubnetA:
@@ -115,6 +122,13 @@ Resources:
     Properties:
       RouteTableId: !Ref PublicRouteTable
       SubnetId: !Ref SubnetA
+
+  # Attach Public Route to SubnetB
+  SubnetBPublicRouteAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref SubnetB
 
   # Create an Internet Gateway
   InternetGateway:
@@ -313,6 +327,7 @@ Resources:
         - !Ref LoadBalancerSecurityGroup
       Subnets:
         - !Ref SubnetA
+        - !Ref SubnetB
       Type: application
 
   # Create a TargetGroup for HTTP port 80
@@ -382,6 +397,7 @@ Resources:
           AssignPublicIp: ENABLED
           Subnets:
             - !Ref SubnetA
+            - !Ref SubnetB
           SecurityGroups:
             - !Ref ContainerSecurityGroup
       LoadBalancers:
