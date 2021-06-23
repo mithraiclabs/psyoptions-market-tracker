@@ -185,8 +185,6 @@ Resources:
   TimescaleEC2Instance:
     Type: AWS::EC2::Instance
     Properties: 
-      Affinity: String
-      # AvailabilityZone: String
       BlockDeviceMappings: 
       # TODO re-evaluate block device for production work load
         - DeviceName: "/dev/sdm"
