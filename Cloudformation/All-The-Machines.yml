@@ -170,7 +170,6 @@ Resources:
 
 
   # Create the Timescale EC2 instance
-  # TODO figure out how to initialize the database with a user, name, and password
   TimescaleEC2Instance:
     Type: AWS::EC2::Instance
     Properties: 
@@ -204,7 +203,27 @@ Resources:
             "",
             [
               "#!/bin/bash -xe\n",
-              "timescaledb-tune --yes"
+              # TODO use secret manager for sensitive environment variables
+              "export POSTGRES_USER=tracker\n",
+              "export POSTGRES_DB=serum_markets\n",
+              "export POSTGRES_PASSWORD=password\n",
+              "create_sql=`mktemp`\n",
+              "cat <<EOF >${create_sql}\n",
+              "CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;\n",
+              "EOF\n",
+              # Create the postgres user if it doesn't exists
+              "psql -tc \"SELECT 1 FROM pg_user WHERE usename = '${POSTGRES_USER}'\" | grep -q 1 || psql -c \"CREATE USER ${POSTGRES_USER} WITH PASSWORD '${POSTGRES_PASSWORD}';\"\n",
+              # initialize timescale extension on all databases
+              "psql -U \"${POSTGRES_USER}\" postgres -f ${create_sql}\n",
+              "psql -U \"${POSTGRES_USER}\" template1 -f ${create_sql}\n",
+              # Create the new database if it doesn't exists
+              "psql -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = '${POSTGRES_DB}'\" | grep -q 1 | psql -U ${POSTGRES_USER} -c \"CREATE DATABASE ${POSTGRES_DB}\"\n",
+              # Add Timescale extension to database if it doesn't exists yet
+              "if [ \"${POSTGRES_DB:-postgres}\" != 'postgres' ]; then\n",
+              "psql -U \"${POSTGRES_USER}\" \"${POSTGRES_DB}\" -f ${create_sql}\n",
+              "fi\n",
+              # Auto tune PG for timescale and the current instance type
+              "timescaledb-tune --yes\n",
             ]
           ]
 
@@ -230,9 +249,9 @@ Resources:
               Value: !Ref SerumVialContainerPort
             - Name: HASURA_GRAPHQL_CORS_DOMAIN
               Value: "*"
-              # TODO relies on the Timescale infrastructure
+              # TODO replace with secrests / parameters
             - Name: HASURA_GRAPHQL_DATABASE_URL
-              Value: ''
+              Value: !Join ['', ['postgres://tracker:password@', !GetAtt TimescaleEC2Instance.PrivateDnsName, '/serum_markets' ]]
             - Name: HASURA_GRAPHQL_DEV_MODE
               Value: false
             - Name: HASURA_GRAPHQL_ENABLE_CONSOLE
