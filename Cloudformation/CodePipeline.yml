@@ -188,6 +188,7 @@ Resources:
                   - 'logs:DeleteLogGroup'
                   - 'logs:PutRetentionPolicy'
                   - 'route53:*'
+                  - 'servicediscovery:*'
                 Resource: '*'
 
   # Create the Hasura BuildProject with required Build information
