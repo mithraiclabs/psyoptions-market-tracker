@@ -166,7 +166,7 @@ Resources:
         Name: private-psyoptions.io
         Vpc: !Ref VPC
   
-  DiscoveryService:
+  TimescaleDiscoveryService:
     Type: AWS::ServiceDiscovery::Service
     Properties: 
       Description: Discovery Service for the PsyOptions Market Tracker
@@ -177,7 +177,7 @@ Resources:
             Type: SRV
       HealthCheckCustomConfig: 
         FailureThreshold: 1
-      Name: !Join ['-', [!Ref ResourcePrefix, 'discovery-service']]
+      Name: !Join ['-', [!Ref ResourcePrefix, 'timescale']]
       NamespaceId: !Ref PrivateNamespace
 
   TimescaleSecurityGroup:
@@ -203,6 +203,47 @@ Resources:
           FromPort: 0
           ToPort: 65535
           CidrIp: 172.10.0.0/16
+
+  TimescaleIamInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties: 
+      InstanceProfileName: !Join ['-', [!Ref ResourcePrefix, 'Timescale']]
+      Roles: 
+        - ecsInstanceRole
+
+  # Create the Timescale EC2 instance
+  TimescaleEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties: 
+      BlockDeviceMappings: 
+      # TODO re-evaluate block device for production work load
+        - DeviceName: "/dev/sdm"
+          Ebs: 
+            DeleteOnTermination: false
+            VolumeSize: 20
+            VolumeType: gp3
+      EbsOptimized: true
+      IamInstanceProfile: !Ref TimescaleIamInstanceProfile
+      ImageId: !FindInMap [ RegionMap, !Ref AWS::Region, 'TimescaleAmi' ]
+      InstanceType: t3.small
+      KeyName: !Ref Ec2KeyNameParam
+      # Monitoring: Boolean
+      # TODO move the instance to a private subnet after setup and configuration is verified.
+      NetworkInterfaces: 
+        - AssociatePublicIpAddress: true
+          DeviceIndex: 0
+          GroupSet: 
+            - !Ref TimescaleSecurityGroup
+          SubnetId: !Ref SubnetA
+      UserData:
+        Fn::Base64:
+          Fn::Join: [
+            "",
+            [
+              "#!/bin/bash -xe\n",
+              !Join ['', ["echo ECS_CLUSTER=", !Ref Cluster, " >> /etc/ecs/ecs.config"]]your_cluster_name
+            ]
+          ]
 
   # Create the Hasura TaskDefinition with container details
   TimescaleTaskDefinition:
@@ -263,7 +304,7 @@ Resources:
               Value: "*"
               # TODO replace with secrests / parameters
             - Name: HASURA_GRAPHQL_DATABASE_URL
-              Value: postgres://tracker:password@timescale.private-psyoptions.io/serum_markets
+              Value: !Join ['', [postgres://tracker:password@', !GetAtt TimescaleDiscoveryService.Name , '.private-psyoptions.io', '/serum_markets']] 
             - Name: HASURA_GRAPHQL_DEV_MODE
               Value: false
             - Name: HASURA_GRAPHQL_ENABLE_CONSOLE
@@ -397,6 +438,8 @@ Resources:
   # Create a ECS Service for the Timescale DB task
   TimescaleECSService:
     Type: AWS::ECS::Service
+    DependsOn:
+      - TimescaleEC2Instance
     Properties:
       ServiceName: timescale
       Cluster: !Ref Cluster
@@ -405,7 +448,7 @@ Resources:
       LaunchType: EC2
       EnableExecuteCommand: true
       ServiceRegistries:
-        - RegistryArn: !GetAtt DiscoveryService.Arn
+        - RegistryArn: !GetAtt TimescaleDiscoveryService.Arn
           ContainerName: !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Timescale']]
           ContainerPort: !Ref TimescaleContainerPort
 
@@ -436,6 +479,3 @@ Resources:
             !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Hasura']]
           ContainerPort: !Ref HasuraContainerPort
           TargetGroupArn: !Ref TargetGroup
-      ServiceRegistries:
-        - RegistryArn: !GetAtt DiscoveryService.Arn
-          Port: !Ref HasuraContainerPort
