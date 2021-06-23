@@ -10,9 +10,6 @@ Parameters:
   GithubBranch:
     Type: String
     Default: <BRANCH>
-  ContainerPort:
-    Type: Number
-    Default: 8080
   CodeStarGithubConnectionArn:
     Type: String
   FullRepositoryId:
@@ -438,8 +435,7 @@ Resources:
                     "SerumVialImageURI" : { "Fn::GetParam" : ["serum-vial-output-artifacts", "imagedefinitions.json", "ImageURI"] },
                     "ListenerImageURI" : { "Fn::GetParam" : ["listener-output-artifacts", "imagedefinitions.json", "ImageURI"] },
                     "DashboardImageURI" : { "Fn::GetParam" : ["dashboard-output-artifacts", "imagedefinitions.json", "ImageURI"] },
-                    "Stage":  "${Stage}",
-                    "ContainerPort": "${ContainerPort}",
+                    "ResourcePrefix":  "${ResourcePrefix}",
                     "HostedZoneId": "${HostedZoneId}",
                     "HasuraDomainName": "${HasuraDomainName}",
                     "HasuraDomainCertificateArn": "${HasuraDomainCertificateArn}",

@@ -4,8 +4,9 @@ Parameters:
     Type: String
     Default: psyoptions-tracker
     AllowedPattern : "[a-z\\-]*"
-  ContainerPort:
+  HasuraContainerPort:
     Type: Number
+    Default: 8080
   HasuraImageURI:
     Type: String
   SerumVialImageURI:
@@ -14,9 +15,6 @@ Parameters:
     Type: String
   DashboardImageURI:
     Type: String
-  SerumVialContainerPort:
-    Type: Number
-    Default: 8000
   RpcUrl:
     Type: String
     Default: https://api.devnet.solana.com
@@ -246,7 +244,7 @@ Resources:
           ReadonlyRootFilesystem: false
           Environment:
             - Name: PORT
-              Value: !Ref SerumVialContainerPort
+              Value: !Ref HasuraContainerPort
             - Name: HASURA_GRAPHQL_CORS_DOMAIN
               Value: "*"
               # TODO replace with secrests / parameters
@@ -259,8 +257,8 @@ Resources:
             - Name: HASURA_GRAPHQL_ENABLED_LOG_TYPES
               Value: startup, http-log, webhook-log, websocket-log, query-log
           PortMappings:
-            - ContainerPort: !Ref SerumVialContainerPort
-              HostPort: !Ref SerumVialContainerPort
+            - ContainerPort: !Ref HasuraContainerPort
+              HostPort: !Ref HasuraContainerPort
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -301,8 +299,8 @@ Resources:
       VpcId: !Ref VPC
       SecurityGroupIngress:
         - IpProtocol: tcp
-          FromPort: !Ref ContainerPort
-          ToPort: !Ref ContainerPort
+          FromPort: !Ref HasuraContainerPort
+          ToPort: !Ref HasuraContainerPort
           SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup
 
   # Create a LoadBalancer and attach the Security group and Subnets
@@ -333,14 +331,8 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       DefaultActions:
-        - RedirectConfig:
-            Host: '#{host}'
-            Path: '/#{path}'
-            Port: 443
-            Protocol: 'HTTPS'
-            Query: '#{query}'
-            StatusCode: HTTP_301
-          Type: redirect
+        - TargetGroupArn: !Ref TargetGroup
+          Type: forward
       LoadBalancerArn: !Ref LoadBalancer
       Port: 80
       Protocol: HTTP
@@ -354,7 +346,7 @@ Resources:
           Type: forward
       LoadBalancerArn: !Ref LoadBalancer
       Certificates:
-        - CertificateArn: !Ref DomainCertificateArn
+        - CertificateArn: !Ref HasuraDomainCertificateArn
       Port: 443
       Protocol: HTTPS
       SslPolicy: ELBSecurityPolicy-2016-08
@@ -395,5 +387,5 @@ Resources:
       LoadBalancers:
         - ContainerName:
             !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Container']]
-          ContainerPort: !Ref ContainerPort
+          ContainerPort: !Ref HasuraContainerPort
           TargetGroupArn: !Ref TargetGroup
