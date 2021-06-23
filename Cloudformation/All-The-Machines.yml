@@ -215,8 +215,9 @@ Resources:
         - 'EC2'
       TaskRoleArn: !Ref ExecutionRole
       ExecutionRoleArn: !Ref ExecutionRole
+      MemoryReservation: 1024
       ContainerDefinitions:
-        - Name: !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Hasura']]
+        - Name: !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Timescale']]
           Image: public.ecr.aws/s6m7j8l9/timescale/timescaledb:2.2.0-pg13
           ReadonlyRootFilesystem: false
           Environment:
