@@ -210,7 +210,7 @@ Resources:
   TimescaleTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      NetworkMode: awsvpc
+      NetworkMode: host
       RequiresCompatibilities:
         - 'EC2'
       TaskRoleArn: !Ref ExecutionRole
@@ -406,13 +406,6 @@ Resources:
       DesiredCount: 1
       LaunchType: EC2
       EnableExecuteCommand: true
-      NetworkConfiguration:
-        AwsvpcConfiguration:
-          AssignPublicIp: ENABLED
-          Subnets:
-            - !Ref SubnetA
-          SecurityGroups:
-            - !Ref TimescaleContainerSecurityGroup
       ServiceRegistries:
         - RegistryArn: !GetAtt DiscoveryService.Arn
           Port: !Ref TimescaleContainerPort
