@@ -174,8 +174,6 @@ Resources:
         RoutingPolicy: MULTIVALUE
         DnsRecords:
           - TTL: 60
-            Type: A
-          - TTL: 60
             Type: SRV
       HealthCheckCustomConfig: 
         FailureThreshold: 1
