@@ -190,7 +190,6 @@ Resources:
         - DeviceName: "/dev/sdm"
           Ebs: 
             DeleteOnTermination: false
-            SnapshotId: String
             VolumeSize: 20
             VolumeType: gp3
       EbsOptimized: true
