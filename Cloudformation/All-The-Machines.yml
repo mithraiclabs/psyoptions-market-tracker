@@ -37,23 +37,23 @@ Parameters:
 Mappings: 
   RegionMap:
     us-east-1: 
-      "TimescaleAmi": "ami-0313b4bfed0594a99"
+      "AwsLinux2EcsOptimized": "ami-0dbd8c88f9060cf71"
     us-east-2: 
-      "TimescaleAmi": "ami-0c5ddf9bfd0e62c37"
+      "AwsLinux2EcsOptimized": "ami-062be0c2f0e7fb6d2"
     us-west-1: 
-      "TimescaleAmi": "ami-0e989ea8765644217"
+      "AwsLinux2EcsOptimized": "ami-09bc3667a66efbf89"
     us-west-2: 
-      "TimescaleAmi": "ami-0623161c84070eab1"
+      "AwsLinux2EcsOptimized": "ami-0a51409a409fbc030"
     eu-central-1:
-      "TimescaleAmi": "ami-01a81696798f7f978"
+      "AwsLinux2EcsOptimized": "ami-0ebfeb0108c46be41"
     eu-north-1:
-      "TimescaleAmi": "ami-0311515c2f7729997"
+      "AwsLinux2EcsOptimized": "ami-0035a9fe772fd6d60"
     eu-west-1: 
-      "TimescaleAmi": "ami-0e0485cba3f4886ba"
+      "AwsLinux2EcsOptimized": "ami-0fc76c7f5cfa96e89"
     eu-west-2: 
-      "TimescaleAmi": "ami-04cb5c2cf3fadd9dd"
+      "AwsLinux2EcsOptimized": "ami-077f98d933531f865"
     eu-west-3: 
-      "TimescaleAmi": "ami-04cb5c2cf3fadd9dd"
+      "AwsLinux2EcsOptimized": "ami-0c8823759848d625a"
 
 Resources:
   # Create CloudWatch LogGroup for the task logs
@@ -224,7 +224,7 @@ Resources:
             VolumeType: gp3
       EbsOptimized: true
       IamInstanceProfile: !Ref TimescaleIamInstanceProfile
-      ImageId: !FindInMap [ RegionMap, !Ref AWS::Region, 'TimescaleAmi' ]
+      ImageId: !FindInMap [ RegionMap, !Ref AWS::Region, 'AwsLinux2EcsOptimized' ]
       InstanceType: t3.small
       KeyName: !Ref Ec2KeyNameParam
       # Monitoring: Boolean
