@@ -408,7 +408,8 @@ Resources:
       EnableExecuteCommand: true
       ServiceRegistries:
         - RegistryArn: !GetAtt DiscoveryService.Arn
-          Port: !Ref TimescaleContainerPort
+          ContainerName: !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Timescale']]
+          ContainerPort: !Ref TimescaleContainerPort
 
   # Create an ECS Service and add created Cluster, TaskDefintion, Subnets, TargetGroup and SecurityGroup
   HasuraECSService:
