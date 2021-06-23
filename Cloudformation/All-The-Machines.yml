@@ -241,7 +241,7 @@ Resources:
             "",
             [
               "#!/bin/bash -xe\n",
-              !Join ['', ["echo ECS_CLUSTER=", !Ref Cluster, " >> /etc/ecs/ecs.config"]]your_cluster_name
+              !Join ['', ["echo ECS_CLUSTER=", !Ref Cluster, " >> /etc/ecs/ecs.config\n"]],
             ]
           ]
 
