@@ -97,7 +97,7 @@ Resources:
   PrivateSubnetA:
     Type: AWS::EC2::Subnet
     Properties:
-      CidrBlock: 172.10.2.0/24
+      CidrBlock: 172.10.3.0/24
       VpcId: !Ref VPC
       AvailabilityZone: !Join ['', [!Ref 'AWS::Region', 'a']]
 
