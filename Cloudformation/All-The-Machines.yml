@@ -180,6 +180,22 @@ Resources:
       Name: !Join ['-', [!Ref ResourcePrefix, 'timescale']]
       NamespaceId: !Ref PrivateNamespace
 
+  HasuraDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties: 
+      Description: Discovery Service for the PsyOptions Market Tracker
+      DnsConfig:
+        RoutingPolicy: MULTIVALUE
+        DnsRecords:
+          - TTL: 60
+            Type: SRV
+          - TTL: 60
+            Type: A
+      HealthCheckCustomConfig: 
+        FailureThreshold: 1
+      Name: !Join ['-', [!Ref ResourcePrefix, 'hasura']]
+      NamespaceId: !Ref PrivateNamespace
+
   TimescaleSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -479,3 +495,7 @@ Resources:
             !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Hasura']]
           ContainerPort: !Ref HasuraContainerPort
           TargetGroupArn: !Ref TargetGroup
+      ServiceRegistries:
+        - RegistryArn: !GetAtt HasuraDiscoveryService.Arn
+          ContainerName: !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Hasura']]
+          ContainerPort: !Ref HasuraContainerPort
