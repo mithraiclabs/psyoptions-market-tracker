@@ -319,7 +319,7 @@ Resources:
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      Name: !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'TargetGroup']]
+      Name: !Join ['-', [!Ref ResourcePrefix, 'Hasura']]
       Port: 80
       Protocol: HTTP
       TargetType: ip
