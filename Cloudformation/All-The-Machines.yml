@@ -163,7 +163,7 @@ Resources:
   PrivateNamespace:
     Type: AWS::ServiceDiscovery::PrivateDnsNamespace
     Properties:
-        Name: internal.psyoptions.io
+        Name: private-psyoptions.io
         Vpc: !Ref VPC
   
   DiscoveryService:
@@ -264,7 +264,7 @@ Resources:
               Value: "*"
               # TODO replace with secrests / parameters
             - Name: HASURA_GRAPHQL_DATABASE_URL
-              Value: !Join ['', ['postgres://tracker:password@', !GetAtt TimescaleEC2Instance.PrivateDnsName, '/serum_markets' ]]
+              Value: postgres://tracker:password@timescale.private-psyoptions.io/serum_markets
             - Name: HASURA_GRAPHQL_DEV_MODE
               Value: false
             - Name: HASURA_GRAPHQL_ENABLE_CONSOLE
@@ -412,6 +412,9 @@ Resources:
             - !Ref SubnetA
           SecurityGroups:
             - !Ref TimescaleContainerSecurityGroup
+      ServiceRegistries:
+        - RegistryArn: !GetAtt DiscoveryService.Arn
+          Port: !Ref TimescaleContainerPort
 
   # Create an ECS Service and add created Cluster, TaskDefintion, Subnets, TargetGroup and SecurityGroup
   HasuraECSService:
@@ -440,3 +443,6 @@ Resources:
             !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Hasura']]
           ContainerPort: !Ref HasuraContainerPort
           TargetGroupArn: !Ref TargetGroup
+      ServiceRegistries:
+        - RegistryArn: !GetAtt DiscoveryService.Arn
+          Port: !Ref HasuraContainerPort
