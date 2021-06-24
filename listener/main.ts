@@ -115,5 +115,6 @@ ws.on("message", async function (message: any) {
 });
 
 ws.on("error", function (error) {
+  console.log('**** websocket error')
   console.error(error)
 })
