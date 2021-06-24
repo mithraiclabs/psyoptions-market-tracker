@@ -175,8 +175,6 @@ Resources:
         DnsRecords:
           - TTL: 60
             Type: SRV
-          - TTL: 60
-            Type: A
       HealthCheckCustomConfig: 
         FailureThreshold: 1
       Name: !Join ['-', [!Ref ResourcePrefix, 'timescale']]
@@ -322,7 +320,7 @@ Resources:
               Value: "*"
               # TODO replace with secrests / parameters
             - Name: HASURA_GRAPHQL_DATABASE_URL
-              Value: !Join ['', ['postgres://tracker:password@', !GetAtt TimescaleDiscoveryService.Name , '.private-psyoptions.io', '/serum_markets']] 
+              Value: !Join ['', ['postgres://tracker:password@', !GetAtt TimescaleEC2Instance.PrivateIp , ':5432', '/serum_markets']] 
             - Name: HASURA_GRAPHQL_DEV_MODE
               Value: false
             - Name: HASURA_GRAPHQL_ENABLE_CONSOLE
