@@ -10,4 +10,6 @@ RUN deno cache deps.ts
 ADD ./listener .
 RUN deno cache main.ts
 
+COPY ./markets.json .
+
 CMD ["run", "--allow-net", "--allow-env", "--allow-read", "main.ts"]
