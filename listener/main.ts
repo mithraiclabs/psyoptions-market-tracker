@@ -1,8 +1,6 @@
 import type { WebSocketClient } from "./deps.ts";
 import { StandardWebSocketClient } from "./deps.ts";
 
-console.log('*** ENV vars', Deno.env.get("SERUM_VIAL_URL"), Deno.env.get("GRAPHQL_URL"))
-
 const ws: WebSocketClient = new StandardWebSocketClient(
   String(Deno.env.get("SERUM_VIAL_URL"))
 );
@@ -31,8 +29,6 @@ ws.on("open", function () {
 
 ws.on("message", async function (message: any) {
   const data = JSON.parse(message.data);
-  console.log('*** new message') 
-  console.log({data});
 
   if (!["trade", "open", "change"].includes(data.type)) return;
 
@@ -101,7 +97,6 @@ ws.on("message", async function (message: any) {
   };
 
   try {
-    console.log(`making request to ${Deno.env.get("GRAPHQL_URL")}`)
     await fetch(String(Deno.env.get("GRAPHQL_URL")), {
       method: "POST",
       headers: {

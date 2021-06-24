@@ -1,8 +1,5 @@
-# TODO remove the service discovery stuff because we aren't using it anymore. Only using the instance private IP
-# TODO change task definition read only root file system
 # TODO disable public IP addresses and move to private subnets where it makes sense (e.g. Serum Vial, Listener, Timescale)
-# TODO create a cloudwatch dashboard for the resources in the cluster
-# arn:aws:codestar-connections:us-east-1:167913859544:connection/e7af37d0-b517-45d5-83ef-a7e70931a246
+
 Parameters:
   ResourcePrefix:
     Description: Name used to prefix most resources
@@ -175,22 +172,6 @@ Resources:
         Name: private-psyoptions.io
         Vpc: !Ref VPC
 
-  HasuraDiscoveryService:
-    Type: AWS::ServiceDiscovery::Service
-    Properties: 
-      Description: Discovery Service for the PsyOptions Market Tracker
-      DnsConfig:
-        RoutingPolicy: MULTIVALUE
-        DnsRecords:
-          - TTL: 60
-            Type: SRV
-          - TTL: 60
-            Type: A
-      HealthCheckCustomConfig: 
-        FailureThreshold: 1
-      Name: !Join ['-', [!Ref ResourcePrefix, 'hasura']]
-      NamespaceId: !Ref PrivateNamespace
-
   TimescaleSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -200,10 +181,6 @@ Resources:
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 5432
-          ToPort: 5432
           CidrIp: 0.0.0.0/0
         - IpProtocol: "-1"
           FromPort: 0
@@ -307,7 +284,7 @@ Resources:
           Image: !Ref HasuraImageURI
           Cpu: 512
           Memory: 1024
-          ReadonlyRootFilesystem: false
+          ReadonlyRootFilesystem: true
           Environment:
             - Name: PORT
               Value: !Ref HasuraContainerPort
@@ -355,7 +332,7 @@ Resources:
           Image: !Ref SerumVialImageURI
           Cpu: 512
           Memory: 1024
-          ReadonlyRootFilesystem: false
+          ReadonlyRootFilesystem: true
           Environment:
             - Name: PORT
               Value: !Ref SerumVialContainerPort
@@ -514,10 +491,6 @@ Resources:
             !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Hasura']]
           ContainerPort: !Ref HasuraContainerPort
           TargetGroupArn: !Ref TargetGroup
-      ServiceRegistries:
-        - RegistryArn: !GetAtt HasuraDiscoveryService.Arn
-          ContainerName: !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Hasura']]
-          ContainerPort: !Ref HasuraContainerPort
 
   # Create the discovery service for Serum Vial
   SerumVialDiscoveryService:
@@ -592,7 +565,7 @@ Resources:
           Image: !Ref ListenerImageURI
           Cpu: 256
           Memory: 512
-          ReadonlyRootFilesystem: false
+          ReadonlyRootFilesystem: true
           Environment:
             - Name: GRAPHQL_URL
               Value: !Join ['', ['https://', !Ref HasuraDomainName, '/v1/graphql']]
