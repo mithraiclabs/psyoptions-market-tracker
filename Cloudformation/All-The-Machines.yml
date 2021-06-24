@@ -175,6 +175,8 @@ Resources:
         DnsRecords:
           - TTL: 60
             Type: SRV
+          - TTL: 60
+            Type: A
       HealthCheckCustomConfig: 
         FailureThreshold: 1
       Name: !Join ['-', [!Ref ResourcePrefix, 'timescale']]
