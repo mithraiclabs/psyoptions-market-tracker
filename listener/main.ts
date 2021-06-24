@@ -1,11 +1,14 @@
 import type { WebSocketClient } from "./deps.ts";
 import { StandardWebSocketClient } from "./deps.ts";
 
+console.log('*** ENV vars', Deno.env.get("SERUM_VIAL_URL"), Deno.env.get("GRAPHQL_URL"))
+
 const ws: WebSocketClient = new StandardWebSocketClient(
   String(Deno.env.get("SERUM_VIAL_URL"))
 );
 
 ws.on("open", function () {
+  console.log('Websocket opened')
   const markets: Array<{
     address: string;
     deprecated: boolean;
@@ -110,3 +113,7 @@ ws.on("message", async function (message: any) {
     console.error({ err });
   }
 });
+
+ws.on("error", function (error) {
+  console.error(error)
+})
