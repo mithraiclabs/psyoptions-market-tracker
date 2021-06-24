@@ -445,7 +445,8 @@ Resources:
                     "HostedZoneId": "${HostedZoneId}",
                     "HasuraDomainName": "${HasuraDomainName}",
                     "HasuraDomainCertificateArn": "${HasuraDomainCertificateArn}",
-                    "Ec2KeyNameParam": "${Ec2KeyNameParam}"
+                    "Ec2KeyNameParam": "${Ec2KeyNameParam}",
+                    "SolanaRpcUrl": "https://api.devnet.solana.com"
                   }
                 RoleArn:
                   Fn::GetAtt: [CloudformationExecutionRole, Arn]

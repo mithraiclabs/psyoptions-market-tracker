@@ -1,10 +1,20 @@
+# TODO remove the service discovery stuff because we aren't using it anymore. Only using the instance private IP
+# TODO change task definition read only root file system
+# arn:aws:codestar-connections:us-east-1:167913859544:connection/e7af37d0-b517-45d5-83ef-a7e70931a246
 Parameters:
   ResourcePrefix:
     Description: Name used to prefix most resources
     Type: String
     Default: psyoptions-tracker
     AllowedPattern : "[a-z\\-]*"
+  SolanaRpcUrl:
+    Description: The RPC URL used to connect with the solana blockchain
+    Type: String
+    Default: https://api.devnet.solana.com
   HasuraContainerPort:
+    Type: Number
+    Default: 8080
+  SerumVialContainerPort:
     Type: Number
     Default: 8080
   TimescaleContainerPort:
@@ -165,20 +175,6 @@ Resources:
     Properties:
         Name: private-psyoptions.io
         Vpc: !Ref VPC
-  
-  TimescaleDiscoveryService:
-    Type: AWS::ServiceDiscovery::Service
-    Properties: 
-      Description: Discovery Service for the PsyOptions Market Tracker
-      DnsConfig:
-        RoutingPolicy: MULTIVALUE
-        DnsRecords:
-          - TTL: 60
-            Type: SRV
-      HealthCheckCustomConfig: 
-        FailureThreshold: 1
-      Name: !Join ['-', [!Ref ResourcePrefix, 'timescale']]
-      NamespaceId: !Ref PrivateNamespace
 
   HasuraDiscoveryService:
     Type: AWS::ServiceDiscovery::Service
@@ -338,6 +334,43 @@ Resources:
                 !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Container']]
               awslogs-stream-prefix: 'Hasura'
 
+  # Create the Serum Vial TaskDefinition with container details
+  SerumVialTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Memory: 1024
+      Cpu: 512
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - 'FARGATE'
+      TaskRoleArn: !Ref ExecutionRole
+      ExecutionRoleArn: !Ref ExecutionRole
+      ContainerDefinitions:
+        - Name: !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'SerumVial']]
+          Image: !Ref SerumVialImageURI
+          Cpu: 512
+          Memory: 1024
+          ReadonlyRootFilesystem: false
+          Environment:
+            - Name: PORT
+              Value: !Ref SerumVialContainerPort
+            - Name: SV_ENDPOINT
+              Value: !Ref SolanaRpcUrl
+            - Name: SV_LOG_LEVEL
+              Value: info
+            - Name: SV_MARKETS_JSON
+              Value: markets.json
+          PortMappings:
+            - ContainerPort: !Ref SerumVialContainerPort
+              HostPort: !Ref SerumVialContainerPort
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: !Ref 'AWS::Region'
+              awslogs-group:
+                !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Container']]
+              awslogs-stream-prefix: 'SerumVial'
+
   # Creat a security group for load balancer and open port 80 in bound from internet
   LoadBalancerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -357,22 +390,6 @@ Resources:
           FromPort: 443
           ToPort: 443
           CidrIp: 0.0.0.0/0
-
-  # Creat a security group for Containers and open in bound Container port from Load balancer security group to the Container
-  TimescaleContainerSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription:
-        !Join [
-          '-',
-          [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Timescale ContainerSecurityGroup'],
-        ]
-      VpcId: !Ref VPC
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: !Ref TimescaleContainerPort
-          ToPort: !Ref TimescaleContainerPort
-          CidrIp: 172.10.0.0/16
 
   # Creat a security group for Containers and open in bound Container port from Load balancer security group to the Container
   HasuraContainerSecurityGroup:
@@ -463,10 +480,6 @@ Resources:
       DesiredCount: 1
       LaunchType: EC2
       EnableExecuteCommand: true
-      ServiceRegistries:
-        - RegistryArn: !GetAtt TimescaleDiscoveryService.Arn
-          ContainerName: !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Timescale']]
-          ContainerPort: !Ref TimescaleContainerPort
 
   # Create an ECS Service and add created Cluster, TaskDefintion, Subnets, TargetGroup and SecurityGroup
   HasuraECSService:
@@ -499,3 +512,65 @@ Resources:
         - RegistryArn: !GetAtt HasuraDiscoveryService.Arn
           ContainerName: !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Hasura']]
           ContainerPort: !Ref HasuraContainerPort
+
+  # Create the discovery service for Serum Vial
+  SerumVialDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties: 
+      Description: Discovery Service for the Serum Vial task
+      DnsConfig:
+        RoutingPolicy: MULTIVALUE
+        DnsRecords:
+          - TTL: 60
+            Type: SRV
+          - TTL: 60
+            Type: A
+      HealthCheckCustomConfig: 
+        FailureThreshold: 1
+      Name: !Join ['-', [!Ref ResourcePrefix, 'serum-vial']]
+      NamespaceId: !Ref PrivateNamespace
+
+  # Create a security group for Containers and open in bound Container port
+  SerumVialContainerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription:
+        !Join [
+          '-',
+          [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'SerumVial ContainerSecurityGroup'],
+        ]
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: !Ref SerumVialContainerPort
+          ToPort: !Ref SerumVialContainerPort
+          CidrIp: 172.10.0.0/16
+
+  SerumVialECSService:
+    Type: AWS::ECS::Service
+    DependsOn:
+      - HasuraECSService
+    Properties:
+      ServiceName: serum-vial
+      Cluster: !Ref Cluster
+      TaskDefinition: !Ref SerumVialTaskDefinition
+      DesiredCount: 1
+      LaunchType: FARGATE
+      EnableExecuteCommand: true
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets:
+            - !Ref SubnetA
+            - !Ref SubnetB
+          SecurityGroups:
+            - !Ref SerumVialContainerSecurityGroup`
+      LoadBalancers:
+        - ContainerName:
+            !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'SerumVial']]
+          ContainerPort: !Ref SerumVialContainerPort
+          TargetGroupArn: !Ref TargetGroup
+      ServiceRegistries:
+        - RegistryArn: !GetAtt SerumVialDiscoveryService.Arn
+          ContainerName: !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'SerumVial']]
+          ContainerPort: !Ref SerumVialContainerPort
