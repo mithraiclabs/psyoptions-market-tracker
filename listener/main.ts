@@ -32,6 +32,7 @@ ws.on("open", function () {
 
 ws.on("message", async function (message: any) {
   const data = JSON.parse(message.data);
+  console.log('*** new message', data)
 
   if (!["trade", "open", "change"].includes(data.type)) return;
 
