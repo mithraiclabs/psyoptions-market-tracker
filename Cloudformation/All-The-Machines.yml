@@ -316,11 +316,17 @@ Resources:
             - Name: HASURA_GRAPHQL_DATABASE_URL
               Value: !Join ['', ['postgres://tracker:password@', !GetAtt TimescaleEC2Instance.PrivateIp , ':5432', '/serum_markets']] 
             - Name: HASURA_GRAPHQL_DEV_MODE
-              Value: false
+              Value: true
+            - Name: HASURA_GRAPHQL_LOG_LEVEL
+              Value: debug
             - Name: HASURA_GRAPHQL_ENABLE_CONSOLE
               Value: true
             - Name: HASURA_GRAPHQL_ENABLED_LOG_TYPES
               Value: startup, http-log, webhook-log, websocket-log, query-log
+            - Name: HASURA_GRAPHQL_METADATA_DIR
+              Value: /hasura-metadata
+            - Name: HASURA_GRAPHQL_MIGRATIONS_DIR
+              Value: /hasura-migrations
           PortMappings:
             - ContainerPort: !Ref HasuraContainerPort
               HostPort: !Ref HasuraContainerPort
