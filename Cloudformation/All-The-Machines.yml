@@ -595,7 +595,7 @@ Resources:
           ReadonlyRootFilesystem: false
           Environment:
             - Name: GRAPHQL_URL
-              Value: !Join ['', ['http://', !GetAtt HasuraDiscoveryService.Name, '.private-psyoptions.io:', !Ref HasuraContainerPort, '/v1/graphql']]
+              Value: !Join ['', ['https://', !Ref HasuraDomainName, '/v1/graphql']]
             - Name: SERUM_VIAL_URL
               Value: !Join ['', ['ws://', !GetAtt SerumVialDiscoveryService.Name, '.private-psyoptions.io:', !Ref SerumVialContainerPort, '/v1/ws']]
             - Name: CHANNELS

@@ -8,7 +8,6 @@ const ws: WebSocketClient = new StandardWebSocketClient(
 );
 
 ws.on("open", function () {
-  console.log('Websocket opened')
   const markets: Array<{
     address: string;
     deprecated: boolean;
@@ -32,7 +31,8 @@ ws.on("open", function () {
 
 ws.on("message", async function (message: any) {
   const data = JSON.parse(message.data);
-  console.log('*** new message', data)
+  console.log('*** new message') 
+  console.log({data});
 
   if (!["trade", "open", "change"].includes(data.type)) return;
 
@@ -101,6 +101,7 @@ ws.on("message", async function (message: any) {
   };
 
   try {
+    console.log(`making request to ${Deno.env.get("GRAPHQL_URL")}`)
     await fetch(String(Deno.env.get("GRAPHQL_URL")), {
       method: "POST",
       headers: {
@@ -109,8 +110,9 @@ ws.on("message", async function (message: any) {
       },
       body: JSON.stringify(body),
     });
-    console.log(data);
+
   } catch (err) {
+    console.log('*** error making request to hasura')
     console.error({ err });
   }
 });
