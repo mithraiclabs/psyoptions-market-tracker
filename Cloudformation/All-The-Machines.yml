@@ -1,6 +1,7 @@
 # TODO remove the service discovery stuff because we aren't using it anymore. Only using the instance private IP
 # TODO change task definition read only root file system
 # TODO disable public IP addresses and move to private subnets where it makes sense (e.g. Serum Vial, Listener, Timescale)
+# TODO create a cloudwatch dashboard for the resources in the cluster
 # arn:aws:codestar-connections:us-east-1:167913859544:connection/e7af37d0-b517-45d5-83ef-a7e70931a246
 Parameters:
   ResourcePrefix:
@@ -431,6 +432,7 @@ Resources:
       Name: !Join ['-', [!Ref ResourcePrefix, 'Hasura']]
       Port: 80
       Protocol: HTTP
+      HealthCheckPath: /healthz
       TargetType: ip
       VpcId: !Ref VPC
       HealthCheckEnabled: true
@@ -578,8 +580,8 @@ Resources:
   ListenerTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      Memory: 1024
-      Cpu: 512
+      Memory: 512
+      Cpu: 256
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - 'FARGATE'
@@ -588,8 +590,8 @@ Resources:
       ContainerDefinitions:
         - Name: !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Listener']]
           Image: !Ref ListenerImageURI
-          Cpu: 512
-          Memory: 1024
+          Cpu: 256
+          Memory: 512
           ReadonlyRootFilesystem: false
           Environment:
             - Name: GRAPHQL_URL
