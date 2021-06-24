@@ -29,9 +29,6 @@ Parameters:
     Type: String
   DashboardImageURI:
     Type: String
-  RpcUrl:
-    Type: String
-    Default: https://api.devnet.solana.com
   HostedZoneId:
     Type: String
   HasuraDomainName:
@@ -638,4 +635,4 @@ Resources:
             - !Ref SubnetA
             - !Ref SubnetB
           SecurityGroups:
-            - !Ref ListenerServierSecurityGroup
+            - !Ref ListenerServiceSecurityGroup
