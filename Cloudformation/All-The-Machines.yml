@@ -1,5 +1,6 @@
 # TODO remove the service discovery stuff because we aren't using it anymore. Only using the instance private IP
 # TODO change task definition read only root file system
+# TODO disable public IP addresses and move to private subnets where it makes sense (e.g. Serum Vial, Listener, Timescale)
 # arn:aws:codestar-connections:us-east-1:167913859544:connection/e7af37d0-b517-45d5-83ef-a7e70931a246
 Parameters:
   ResourcePrefix:
@@ -564,13 +565,77 @@ Resources:
             - !Ref SubnetA
             - !Ref SubnetB
           SecurityGroups:
-            - !Ref SerumVialContainerSecurityGroup`
-      LoadBalancers:
-        - ContainerName:
-            !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'SerumVial']]
-          ContainerPort: !Ref SerumVialContainerPort
-          TargetGroupArn: !Ref TargetGroup
+            - !Ref SerumVialContainerSecurityGroup
       ServiceRegistries:
         - RegistryArn: !GetAtt SerumVialDiscoveryService.Arn
           ContainerName: !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'SerumVial']]
           ContainerPort: !Ref SerumVialContainerPort
+
+  # Create the Serum Vial TaskDefinition with container details
+  ListenerTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Memory: 1024
+      Cpu: 512
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - 'FARGATE'
+      TaskRoleArn: !Ref ExecutionRole
+      ExecutionRoleArn: !Ref ExecutionRole
+      ContainerDefinitions:
+        - Name: !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Listener']]
+          Image: !Ref ListenerImageURI
+          Cpu: 512
+          Memory: 1024
+          ReadonlyRootFilesystem: false
+          Environment:
+            - Name: GRAPHQL_URL
+              Value: !Join ['', ['http://', !GetAtt HasuraDiscoveryService.Name, '.private-psyoptions.io:', !Ref HasuraContainerPort, '/v1/graphql']]
+            - Name: SERUM_VIAL_URL
+              Value: !Join ['', ['ws://', !GetAtt SerumVialDiscoveryService.Name, '.private-psyoptions.io:', !Ref SerumVialContainerPort, '/v1/ws']]
+            - Name: CHANNELS
+              Value: trades, level1, level2, level3
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: !Ref 'AWS::Region'
+              awslogs-group:
+                !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Container']]
+              awslogs-stream-prefix: 'Listener'
+
+  # Create a security group for Containers and open in bound Container port
+  ListenerServiceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription:
+        !Join [
+          '-',
+          [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Listener Service SecurityGroup'],
+        ]
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: "-1"
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: 172.10.0.0/16
+
+  ListenerECSService:
+    Type: AWS::ECS::Service
+    DependsOn:
+      - HasuraECSService
+      - SerumVialECSService
+    Properties:
+      ServiceName: listener
+      Cluster: !Ref Cluster
+      TaskDefinition: !Ref ListenerTaskDefinition
+      DesiredCount: 1
+      LaunchType: FARGATE
+      EnableExecuteCommand: true
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets:
+            - !Ref SubnetA
+            - !Ref SubnetB
+          SecurityGroups:
+            - !Ref ListenerServierSecurityGroup
