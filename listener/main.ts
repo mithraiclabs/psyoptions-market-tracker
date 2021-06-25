@@ -105,8 +105,14 @@ ws.on("message", async function (message: any) {
       },
       body: JSON.stringify(body),
     });
-    console.log(data);
+
   } catch (err) {
+    console.log('*** error making request to hasura')
     console.error({ err });
   }
 });
+
+ws.on("error", function (error) {
+  console.log('**** websocket error')
+  console.error(error)
+})

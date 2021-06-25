@@ -48,7 +48,8 @@ services:
   listener:
     restart: always
     build:
-      context: ./listener
+      context: ./
+      dockerfile: ./listener/Dockerfile
     depends_on:
       - serum-vial
     volumes:
@@ -64,7 +65,8 @@ services:
     ports:
       - 80:80
     build:
-      context: ./dashboard
+      context: ./
+      dockerfile: ./dashboard/Dockerfile
       args:
         GRAPHQL_URL: ${GRAPHQL_URL}
         EXT_HOST: ${EXT_HOST}
