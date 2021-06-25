@@ -285,7 +285,7 @@ Resources:
           Image: !Ref HasuraImageURI
           Cpu: 512
           Memory: 1024
-          ReadonlyRootFilesystem: true
+          ReadonlyRootFilesystem: false
           Environment:
             - Name: PORT
               Value: !Ref HasuraContainerPort
