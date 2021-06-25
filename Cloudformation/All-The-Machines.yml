@@ -1,4 +1,5 @@
 # TODO disable public IP addresses and move to private subnets where it makes sense (e.g. Serum Vial, Listener, Timescale)
+# TODO make database EBS valume standalone so spinning up new instances use the same volume
 
 Parameters:
   ResourcePrefix:
@@ -249,7 +250,7 @@ Resources:
           Environment:
             - Name: PORT
               Value: !Ref TimescaleContainerPort
-            # TODO replace with secrests / parameters
+            # TODO replace with secrets / parameters
             - Name: POSTGRES_DB
               Value: serum_markets
             - Name: POSTGRES_PASSWORD
@@ -290,7 +291,7 @@ Resources:
               Value: !Ref HasuraContainerPort
             - Name: HASURA_GRAPHQL_CORS_DOMAIN
               Value: "*"
-              # TODO replace with secrests / parameters
+              # TODO replace with secrets / parameters
             - Name: HASURA_GRAPHQL_DATABASE_URL
               Value: !Join ['', ['postgres://tracker:password@', !GetAtt TimescaleEC2Instance.PrivateIp , ':5432', '/serum_markets']] 
             - Name: HASURA_GRAPHQL_DEV_MODE
@@ -457,7 +458,6 @@ Resources:
     DependsOn:
       - TimescaleEC2Instance
     Properties:
-      ServiceName: timescale
       Cluster: !Ref Cluster
       TaskDefinition: !Ref TimescaleTaskDefinition
       DesiredCount: 1
@@ -472,7 +472,6 @@ Resources:
       - HttpsLoadBalancerListener
       - TimescaleECSService
     Properties:
-      ServiceName: hasura
       Cluster: !Ref Cluster
       TaskDefinition: !Ref HasuraTaskDefinition
       DesiredCount: 1
@@ -530,7 +529,6 @@ Resources:
     DependsOn:
       - HasuraECSService
     Properties:
-      ServiceName: serum-vial
       Cluster: !Ref Cluster
       TaskDefinition: !Ref SerumVialTaskDefinition
       DesiredCount: 1
@@ -603,7 +601,6 @@ Resources:
       - HasuraECSService
       - SerumVialECSService
     Properties:
-      ServiceName: listener
       Cluster: !Ref Cluster
       TaskDefinition: !Ref ListenerTaskDefinition
       DesiredCount: 1
