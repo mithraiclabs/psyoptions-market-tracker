@@ -3,6 +3,7 @@ WORKDIR /app
 COPY ./listener/package*.json ./
 COPY ./listener/tsconfig.json ./
 COPY ./listener/src ./src
+COPY ./listener/types ./types
 RUN npm install
 RUN npm run build
 

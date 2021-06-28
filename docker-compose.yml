@@ -59,6 +59,9 @@ services:
       SERUM_VIAL_URL: ws://serum-vial:8000/v1/ws
       # https://github.com/tardis-dev/serum-vial#supported-channels--corresponding-message-types
       CHANNELS: trades, level1, level2, level3
+      RPC_URL: ${RPC_URL}
+      PROGRAM_ID: ${PROGRAM_ID}
+      DEX_PROGRAM_ID: ${DEX_PROGRAM_ID}
 
   dashboard:
     restart: always
