@@ -3,25 +3,28 @@ import { Market } from "@mithraic-labs/psyoptions"
 import { Market as SerumMarket } from "@mithraic-labs/serum"
 import fetch from "node-fetch"
 
-const connection = new Connection(process.env['RPC_URL']);
-
 const USDCKey = new PublicKey(
   'E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF',
 )
 
-export const addExistingMarkets = async () => {
-  const markets = await Market.getAllMarkets(connection, new PublicKey(process.env['PROGRAM_ID']))
+export const addExistingMarkets = async ({connection, psyOptionsProgramId}:{
+  connection: Connection;
+  psyOptionsProgramId: PublicKey;
+}) => {
+  const markets = await Market.getAllMarkets(connection, psyOptionsProgramId)
   console.log('*** markets ', markets.length, markets[0]);
+
   const starterPromise = Promise.resolve(null);
   await markets.reduce(async (accumulator, currentMarket) => {
     await accumulator
-    return addMarketToDatabase({market: currentMarket, serumQuoteAsset: USDCKey})
+    return addMarketToDatabase({connection, market: currentMarket, serumQuoteAsset: USDCKey})
   }, starterPromise)
 
 }
 
 
-const addMarketToDatabase = async ({market, serumQuoteAsset}: {
+export const addMarketToDatabase = async ({connection, market, serumQuoteAsset}: {
+  connection: Connection;
   market: Market;
   serumQuoteAsset: PublicKey
 }) => {
