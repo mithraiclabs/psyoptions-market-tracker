@@ -52,6 +52,7 @@ services:
       dockerfile: ./listener/Dockerfile
     depends_on:
       - serum-vial
+      - hasura
     volumes:
       - ./markets.json:/app/markets.json
     environment:

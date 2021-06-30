@@ -1,10 +1,12 @@
 import { AccountInfo, Connection, PublicKey } from '@solana/web3.js'
 import { OPTION_MARKET_LAYOUT, Market as PsyOptionsMarket } from '@mithraic-labs/psyoptions'
-import { addMarketToDatabase } from './addExistingMarkets';
+import { addMarketToDatabase, marketsMissingSerumAddress } from './graphQLClient';
 
 const USDCKey = new PublicKey(
   'E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF',
 )
+
+const assetsWaitingForSerumMarkets = [];
 
 const handlePsyOptionsAccountChange = ({accountId, accountInfo, connection, psyOptionsProgramId}: {
   psyOptionsProgramId: PublicKey;
@@ -47,4 +49,33 @@ export const listenForNewPsyOptionsMarkets = ({
     'confirmed',
     [{dataSize: OPTION_MARKET_LAYOUT.span}]
   )
+}
+
+export const listenForMissingSerumMarkets = async ({
+  connection,
+  serumProgramId
+}: {
+  connection: Connection;
+  serumProgramId: PublicKey;
+}) => {
+  // TODO make a GraphQL request to get the markets that are missing a serum address
+  const { response } = await marketsMissingSerumAddress()
+  if (response) {
+    const json = await response.json();
+    console.log('*** json response = ', json)
+  }
+
+  // connection.onProgramAccountChange(
+  //   serumProgramId,
+  //   (keyedAccountInfo, context) => {
+
+  //     const { accountId, accountInfo } = keyedAccountInfo
+  //     // TODO decode the Serum Market
+  //     // TODO check that the base and quote mints are correct and waiting for a market
+  //     // TODO if the above is true then update the PsyOptions market in the database and add the Serum Market
+
+  //   },
+  //   'confirmed',
+  //   [{dataSize: OPTION_MARKET_LAYOUT.span}]
+  // )
 }
