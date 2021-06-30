@@ -234,3 +234,26 @@ export const subscribeToMissingSerumMarkets = ({onEvent, onError}: SubscriptionA
     }
   })
 }
+
+export const subscribeToActivePsyOptionMarkets = ({onEvent, onError}: SubscriptionArguments) => {
+  // To be considered active the PsyOptions market must have a Serum address and not be expired
+  const SUBSCRIBE_QUERY = gql`
+  subscription ActivePsyOptionMarkets {
+    markets(where: {serum_address: {_is_null: false}, expires_at: {_gte: "now()"}}) {
+      data
+      serum_address
+    }
+  }
+  `
+  const subscriptionClient = createSubscriptionObservable(
+    process.env['GRAPHQL_URL'],
+    SUBSCRIBE_QUERY,                                     // Subscription query
+    {}                                                   // Query variables
+  );
+  return subscriptionClient.subscribe(onEvent, (error) => {
+    console.error(error)
+    if (onError) {
+      onError(error)
+    }
+  })
+}

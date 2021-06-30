@@ -1,4 +1,5 @@
 import * as fs from "fs"
+import { subscribeToActivePsyOptionMarkets } from "./graphQLClient";
 const WebSocket = require("ws")
 
 const serumVialListener = () => {
@@ -7,26 +8,40 @@ const serumVialListener = () => {
   );
 
   ws.on("open", function () {
-    const marketDataStr = fs.readFileSync("./markets.json", 'utf8');
-    const markets: Array<{
-      address: string;
-      deprecated: boolean;
-      name: string;
-      programId: string;
-    }> = JSON.parse(marketDataStr);
-  
-    String(process.env["CHANNELS"])
-      .split(",")
-      .map((c) => c.trim())
-      .forEach((channel) => {
+    const channels = String(process.env["CHANNELS"])
+    .split(",")
+    .map((c) => c.trim());
+
+    let activeSubscriptions: String[] = [];
+    subscribeToActivePsyOptionMarkets({onEvent: (eventData) => {
+      const marketAddresses = eventData.data.markets.map(m => m.serum_address);
+
+      // find all addresses that are missing from the latest return and unsubscribe them
+      const addressesToUnsub = activeSubscriptions.filter(addr => !marketAddresses.includes(addr))
+      channels.forEach((channel) => {
+        ws.send(
+          JSON.stringify({
+            op: "unsubscribe",
+            channel,
+            markets: addressesToUnsub,
+          })
+        );
+      });
+
+      // Re-subscribe to all active PsyOption serum markets
+      // Serum Vial should handle de-duping subscriptions
+      channels.forEach((channel) => {
         ws.send(
           JSON.stringify({
             op: "subscribe",
             channel,
-            markets: markets.map((m) => m.name),
+            markets: marketAddresses,
           })
         );
       });
+      activeSubscriptions = marketAddresses;
+
+    }})
   });
   
   ws.on("message", async function (message: any) {
