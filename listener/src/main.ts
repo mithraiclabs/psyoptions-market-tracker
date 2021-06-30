@@ -9,6 +9,7 @@ import { Connection, PublicKey } from "@solana/web3.js";
 
 const connection = new Connection(process.env['RPC_URL']);
 const psyOptionsProgramId = new PublicKey(process.env['PROGRAM_ID']);
+const serumProgramId = new PublicKey(process.env['DEX_PROGRAM_ID']);
 
 
 (async () => {
@@ -16,9 +17,9 @@ const psyOptionsProgramId = new PublicKey(process.env['PROGRAM_ID']);
   await waitUntilServerUp()
 
   serumVialListener();
-  addExistingMarkets({connection, psyOptionsProgramId});
+  addExistingMarkets({connection, psyOptionsProgramId, serumProgramId});
   listenForNewPsyOptionsMarkets({connection, psyOptionsProgramId})
-  listenForMissingSerumMarkets({connection, serumProgramId: psyOptionsProgramId})
+  listenForMissingSerumMarkets({connection, serumProgramId})
 })();
 
 

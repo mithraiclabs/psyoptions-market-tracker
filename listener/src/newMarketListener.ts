@@ -1,12 +1,12 @@
 import { AccountInfo, Connection, PublicKey } from '@solana/web3.js'
 import { OPTION_MARKET_LAYOUT, Market as PsyOptionsMarket } from '@mithraic-labs/psyoptions'
-import { addMarketToDatabase, marketsMissingSerumAddress } from './graphQLClient';
+import { addMarketToDatabase, addSerumAddressToPsyOptionsMarket, marketsMissingSerumAddress, subscribeToMissingSerumMarkets, wait } from './graphQLClient';
+import { getMintDecimals, _MARKET_STATE_LAYOUT_V2 } from '@mithraic-labs/serum/lib/market'
+import { Market as SerumMarket } from '@mithraic-labs/serum'
 
 const USDCKey = new PublicKey(
   'E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF',
 )
-
-const assetsWaitingForSerumMarkets = [];
 
 const handlePsyOptionsAccountChange = ({accountId, accountInfo, connection, psyOptionsProgramId}: {
   psyOptionsProgramId: PublicKey;
@@ -58,24 +58,45 @@ export const listenForMissingSerumMarkets = async ({
   connection: Connection;
   serumProgramId: PublicKey;
 }) => {
-  // TODO make a GraphQL request to get the markets that are missing a serum address
-  const { response } = await marketsMissingSerumAddress()
-  if (response) {
-    const json = await response.json();
-    console.log('*** json response = ', json)
-  }
+  
+  // make a GraphQL request to get the markets that are missing a serum address
+  const marketAddressesMissingSerum = {};
+  const consumer = subscribeToMissingSerumMarkets({ onEvent: (eventData) => {
+    eventData.data.markets.forEach(m => {
+      marketAddressesMissingSerum[m.data.optionMintKey] = m.data.optionMarketKey
+    })
+  }})
 
-  // connection.onProgramAccountChange(
-  //   serumProgramId,
-  //   (keyedAccountInfo, context) => {
+  connection.onProgramAccountChange(
+    serumProgramId,
+    async (keyedAccountInfo, context) => {
+      try {
+        const { accountId, accountInfo } = keyedAccountInfo
 
-  //     const { accountId, accountInfo } = keyedAccountInfo
-  //     // TODO decode the Serum Market
-  //     // TODO check that the base and quote mints are correct and waiting for a market
-  //     // TODO if the above is true then update the PsyOptions market in the database and add the Serum Market
+        // Sometimes the Mint is not found so we must wait.
+        // TODO find a better solution
+        await wait(500)
+        // decode the Serum Market
+        const decoded = SerumMarket.getLayout(serumProgramId).decode(accountInfo.data);
+        const [baseMintDecimals, quoteMintDecimals] = await Promise.all([
+          getMintDecimals(connection, decoded.baseMint),
+          getMintDecimals(connection, decoded.quoteMint),
+        ]);
+        const serumMarket = new SerumMarket(decoded, baseMintDecimals, quoteMintDecimals, {}, serumProgramId)
 
-  //   },
-  //   'confirmed',
-  //   [{dataSize: OPTION_MARKET_LAYOUT.span}]
-  // )
+        // check that the base mint is waiting for a market
+        const psymarketMissingSerumAddress = marketAddressesMissingSerum[serumMarket.baseMintAddress.toString()];
+        if (psymarketMissingSerumAddress) {
+          // if the above is true then update the PsyOptions market in the database and add the Serum Market
+          addSerumAddressToPsyOptionsMarket({address: psymarketMissingSerumAddress, serumAddress: serumMarket.address.toString()})
+        }
+      } catch(error) {
+        console.error(error)
+      }
+    },
+    'confirmed',
+    // the bytes are Base58 encoding of `Buffer.from([3, 0,0,0,0,0,0,0])`, which denotes an
+    // initialized Serum MarketState account
+    [{memcmp: { bytes:  'W723RTUpoZ', offset: _MARKET_STATE_LAYOUT_V2.offsetOf('accountFlags') }}]
+  )
 }
