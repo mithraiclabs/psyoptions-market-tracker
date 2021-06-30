@@ -23,9 +23,9 @@
   - name: quote_asset
     using:
       foreign_key_constraint_on: quote_asset_mint_address
-  - name: serumClusterBySerumCluster
+  - name: clusterByCluster
     using:
-      foreign_key_constraint_on: serum_cluster
+      foreign_key_constraint_on: cluster
   - name: underlying_asset
     using:
       foreign_key_constraint_on: underlying_asset_mint_address
@@ -64,7 +64,7 @@
     comment: ""
 - table:
     schema: public
-    name: serum_clusters
+    name: clusters
   is_enum: true
 - table:
     schema: public
@@ -76,22 +76,7 @@
 - table:
     schema: public
     name: serum_markets
-  array_relationships:
-  - name: serum_vial_events
-    using:
-      foreign_key_constraint_on:
-        column: serum_market_id
-        table:
-          schema: public
-          name: serum_vial_events
 - table:
     schema: public
     name: serum_vial_event_types
   is_enum: true
-- table:
-    schema: public
-    name: serum_vial_events
-  object_relationships:
-  - name: serum_market
-    using:
-      foreign_key_constraint_on: serum_market_id

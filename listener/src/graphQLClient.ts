@@ -92,7 +92,7 @@ export const addMarketToDatabase = async ({connection, market, serumQuoteAsset}:
   const body = {
     query: `
     mutation (
-      $serum_cluster: serum_clusters_enum
+      $cluster: clusters_enum
       $serum_address: String
       $expires_at: timestamp
       $data: jsonb
@@ -105,7 +105,7 @@ export const addMarketToDatabase = async ({connection, market, serumQuoteAsset}:
       insert_markets_one(
         object: {
           address: $address
-          serum_cluster: $serum_cluster
+          cluster: $cluster
           serum_address: $serum_address
           expires_at: $expires_at
           data: $data
@@ -131,7 +131,7 @@ export const addMarketToDatabase = async ({connection, market, serumQuoteAsset}:
       `,
     variables: {
       address: market.marketData.optionMarketKey.toString(),
-      serum_cluster: 'devnet',
+      cluster: 'devnet',
       serum_address: serumMarkets[0]?.publicKey.toString(),
       // expiration is the unix timestamp in seconds, JS expects miliseconds
       expires_at: new Date(market.marketData.expiration * 1000).toISOString(),

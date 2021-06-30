@@ -48,6 +48,7 @@ export const checkExistingMarketsForSerumMarket = async ({connection, serumProgr
 
   if (response) {
     const {data} = await response.json()
+    const starterPromise = Promise.resolve(null);
     data.markets.reduce(async (accumulator, currentMarket) => {
       await accumulator
       // avoid RPC Node rate limiting errors
@@ -66,6 +67,6 @@ export const checkExistingMarketsForSerumMarket = async ({connection, serumProgr
           await addSerumAddressToPsyOptionsMarket({address: currentMarket.data.optionMarketKey, serumAddress: serumMarketsAccountInfo.publicKey.toString()})
         }
       })()
-    })
+    }, starterPromise)
   }
 }
