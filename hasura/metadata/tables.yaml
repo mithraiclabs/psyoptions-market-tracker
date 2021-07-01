@@ -18,14 +18,26 @@
           name: markets
 - table:
     schema: public
+    name: clusters
+  is_enum: true
+- table:
+    schema: public
     name: markets
   object_relationships:
-  - name: quote_asset
-    using:
-      foreign_key_constraint_on: quote_asset_mint_address
   - name: clusterByCluster
     using:
       foreign_key_constraint_on: cluster
+  - name: quote_asset
+    using:
+      foreign_key_constraint_on: quote_asset_mint_address
+  - name: serum_market
+    using:
+      manual_configuration:
+        remote_table:
+          schema: public
+          name: serum_markets
+        column_mapping:
+          serum_address: address
   - name: underlying_asset
     using:
       foreign_key_constraint_on: underlying_asset_mint_address
@@ -64,10 +76,6 @@
     comment: ""
 - table:
     schema: public
-    name: clusters
-  is_enum: true
-- table:
-    schema: public
     name: serum_events
   object_relationships:
   - name: market
@@ -76,6 +84,15 @@
 - table:
     schema: public
     name: serum_markets
+  object_relationships:
+  - name: market
+    using:
+      manual_configuration:
+        remote_table:
+          schema: public
+          name: markets
+        column_mapping:
+          address: serum_address
 - table:
     schema: public
     name: serum_vial_event_types

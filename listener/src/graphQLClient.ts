@@ -69,17 +69,27 @@ const makeRequest = async ({body}: {body: object}): Promise<{
   }
 }
 
+/**
+ * Add a PsyOptions market to the database
+ * 
+ * TODO separate the adding PsyOption market and retrieving SerumMarket information
+ */
 export const addMarketToDatabase = async ({connection, market, serumQuoteAsset}: {
   connection: Connection;
   market: Market;
   serumQuoteAsset: PublicKey
 }) => {
+  const serumProgramId = new PublicKey(process.env['DEX_PROGRAM_ID'])
   const serumMarkets = await SerumMarket.findAccountsByMints(
     connection,
     market.marketData.optionMintKey,
     serumQuoteAsset,
-    new PublicKey(process.env['DEX_PROGRAM_ID']),
+    serumProgramId,
   )
+  let serumMarket: SerumMarket|undefined;
+  if (serumMarkets.length) {
+    serumMarket = await SerumMarket.load(connection, serumMarkets[0].publicKey, {}, serumProgramId)
+  }
   let data = {};
   Object.keys(market.marketData).forEach(key => {
     const value = market.marketData[key]
@@ -100,13 +110,15 @@ export const addMarketToDatabase = async ({connection, market, serumQuoteAsset}:
       $underlying_asset_mint_address: String
       $quote_asset_per_contract: numeric
       $underlying_asset_per_contract: numeric
-      $address: String
+      $address: String!
+      $serum_program_id: String
+      $srm_base_mint_address: String
+      $srm_quote_mint_address: String
     ) {
       insert_markets_one(
         object: {
           address: $address
           cluster: $cluster
-          serum_address: $serum_address
           expires_at: $expires_at
           data: $data
           quote_asset_per_contract: $quote_asset_per_contract
@@ -122,7 +134,18 @@ export const addMarketToDatabase = async ({connection, market, serumQuoteAsset}:
               mint_address: $underlying_asset_mint_address,
             },
             on_conflict: { constraint: assets_pkey, update_columns: mint_address },
-          }
+          },
+          ${serumMarket ? `
+          serum_market: {
+            data: {
+              address: $serum_address,
+              program_id: $serum_program_id,
+              base_mint_address: $srm_base_mint_address,
+              quote_mint_address: $srm_quote_mint_address,
+            },
+            on_conflict: { constraint: serum_markets_pkey, update_columns: [program_id, base_mint_address, quote_mint_address] },
+          },
+          `: ''}
         }
       ) {
         id
@@ -132,7 +155,7 @@ export const addMarketToDatabase = async ({connection, market, serumQuoteAsset}:
     variables: {
       address: market.marketData.optionMarketKey.toString(),
       cluster: 'devnet',
-      serum_address: serumMarkets[0]?.publicKey.toString(),
+      serum_address: serumMarket?.address?.toString(),
       // expiration is the unix timestamp in seconds, JS expects miliseconds
       expires_at: new Date(market.marketData.expiration * 1000).toISOString(),
       quote_asset_mint_address: market.marketData.quoteAssetMintKey.toString(),
@@ -140,6 +163,9 @@ export const addMarketToDatabase = async ({connection, market, serumQuoteAsset}:
       quote_asset_per_contract: market.marketData.quoteAmountPerContract.toNumber(),
       underlying_asset_per_contract: market.marketData.amountPerContract.toNumber(),
       data,
+      serum_program_id: serumProgramId.toString(),
+      srm_base_mint_address: serumMarket?.baseMintAddress?.toString(),
+      srm_quote_mint_address: serumMarket?.quoteMintAddress?.toString(),
     },
   };
 
