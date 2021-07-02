@@ -24,8 +24,6 @@ export const addExistingMarkets = async ({connection, psyOptionsProgramId, serum
   const markets = await Market.getAllMarkets(connection, psyOptionsProgramId)
   const newMarkets = markets.filter( ({pubkey}) => !existingPubkeys.includes(pubkey.toString()))
 
-  console.log('*** newMarkets ', newMarkets.length, newMarkets[0]);
-
   const starterPromise = Promise.resolve(null);
   await newMarkets.reduce(async (accumulator, currentMarket) => {
     await accumulator
@@ -53,7 +51,6 @@ export const checkExistingMarketsForSerumMarket = async ({connection, serumProgr
       await accumulator
       // avoid RPC Node rate limiting errors
       await wait(500)
-      console.log('*** checking SerumMarket for', currentMarket.data)
       return (async () => {
         // TODO I don't think this is working for some reason
         const serumMarketsAccountInfo = await SerumMarket.findAccountsByMints(
@@ -62,7 +59,7 @@ export const checkExistingMarketsForSerumMarket = async ({connection, serumProgr
           USDCKey,
           serumProgramId,
         )[0]
-        console.log('*** checking SerumMarket', serumMarketsAccountInfo)
+
         if (serumMarketsAccountInfo) {
           await addSerumAddressToPsyOptionsMarket({address: currentMarket.data.optionMarketKey, serumAddress: serumMarketsAccountInfo.publicKey.toString()})
         }

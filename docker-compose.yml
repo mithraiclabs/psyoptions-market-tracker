@@ -31,7 +31,7 @@ services:
       HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
 
   serum-vial:
-    image: tardisdev/serum-vial:latest
+    image: psyoptions/serum-vial:rc_02
     restart: always
     depends_on:
       - hasura
@@ -44,6 +44,7 @@ services:
       SV_ENDPOINT: ${RPC_URL}
       SV_LOG_LEVEL: debug
       SV_MARKETS_JSON: markets.json
+      SV_GRAPHQL_URL: ${GRAPHQL_URL}
 
   listener:
     restart: always
