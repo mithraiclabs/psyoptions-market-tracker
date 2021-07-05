@@ -47,7 +47,7 @@ export const waitUntilServerUp = async () => {
 }
 
 
-const makeRequest = async ({body}: {body: object}): Promise<{
+export const makeRequest = async ({body}: {body: object}): Promise<{
   error?: Error,
   response?: Response
 }> => {

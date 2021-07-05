@@ -41,14 +41,35 @@
   - name: underlying_asset
     using:
       foreign_key_constraint_on: underlying_asset_mint_address
-  array_relationships:
-  - name: serum_events
+  computed_fields:
+  - name: option_type
+    definition:
+      function:
+        schema: public
+        name: option_type
+    comment: ""
+- table:
+    schema: public
+    name: serum_events
+  object_relationships:
+  - name: serum_market
     using:
-      foreign_key_constraint_on:
-        column: market_id
-        table:
+      foreign_key_constraint_on: serum_market_address
+  - name: serum_vial_event_type
+    using:
+      foreign_key_constraint_on: type
+- table:
+    schema: public
+    name: serum_markets
+  object_relationships:
+  - name: market
+    using:
+      manual_configuration:
+        remote_table:
           schema: public
-          name: serum_events
+          name: markets
+        column_mapping:
+          address: serum_address
   computed_fields:
   - name: volume
     definition:
@@ -62,37 +83,12 @@
         schema: public
         name: latest_price
     comment: ""
-  - name: option_type
-    definition:
-      function:
-        schema: public
-        name: option_type
-    comment: ""
   - name: change
     definition:
       function:
         schema: public
         name: change
     comment: ""
-- table:
-    schema: public
-    name: serum_events
-  object_relationships:
-  - name: market
-    using:
-      foreign_key_constraint_on: market_id
-- table:
-    schema: public
-    name: serum_markets
-  object_relationships:
-  - name: market
-    using:
-      manual_configuration:
-        remote_table:
-          schema: public
-          name: markets
-        column_mapping:
-          address: serum_address
 - table:
     schema: public
     name: serum_vial_event_types

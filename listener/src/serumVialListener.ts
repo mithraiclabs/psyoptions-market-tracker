@@ -1,5 +1,5 @@
 import * as fs from "fs"
-import { subscribeToActivePsyOptionMarkets } from "./graphQLClient";
+import { makeRequest, subscribeToActivePsyOptionMarkets } from "./graphQLClient";
 const WebSocket = require("ws")
 
 const serumVialListener = () => {
@@ -60,7 +60,7 @@ const serumVialListener = () => {
         $id: String
         $order_id: String
         $price: numeric
-        $serum_address: String
+        $serum_address: String!
         $side: side
         $size: numeric
         $slot: bigint
@@ -84,10 +84,7 @@ const serumVialListener = () => {
             timestamp: $timestamp
             type: $type
             version: $version
-            market: {
-              data: { serum_address: $serum_address }
-              on_conflict: { constraint: markets_serum_address_key, update_columns: serum_address }
-            }
+            serum_market_address: $serum_address
           }
         ) {
           id
@@ -113,20 +110,7 @@ const serumVialListener = () => {
       },
     };
   
-    try {
-      await fetch(String(process.env["GRAPHQL_URL"]), {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      });
-  
-    } catch (err) {
-      console.log('*** error making request to hasura')
-      console.error({ err });
-    }
+    return makeRequest({body})
   });
   
   ws.on("error", function (error) {
