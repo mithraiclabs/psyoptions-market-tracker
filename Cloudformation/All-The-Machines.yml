@@ -214,7 +214,7 @@ Resources:
       EbsOptimized: true
       IamInstanceProfile: !Ref TimescaleIamInstanceProfile
       ImageId: !FindInMap [ RegionMap, !Ref AWS::Region, 'AwsLinux2EcsOptimized' ]
-      InstanceType: t3.small
+      InstanceType: t3.micro
       KeyName: !Ref Ec2KeyNameParam
       # Monitoring: Boolean
       # TODO move the instance to a private subnet after setup and configuration is verified.
