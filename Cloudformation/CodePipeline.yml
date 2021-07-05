@@ -417,7 +417,70 @@ Resources:
               RunOrder: 1
 
         # Deploy the project by executing All-The-Machines.yml file in the Source code with Cloudformation.
-        - Name: Deploy
+        - Name: StagingDeploy
+          Actions:
+            - Name: Deploy
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: CloudFormation
+              InputArtifacts:
+                - Name: source-output-artifacts
+                - Name: hasura-output-artifacts
+                - Name: serum-vial-output-artifacts
+                - Name: listener-output-artifacts
+                - Name: dashboard-output-artifacts
+              Configuration:
+                ActionMode: CREATE_UPDATE
+                Capabilities: CAPABILITY_NAMED_IAM
+                # Pass parameter values to All-The-Machines.yml for deployment
+                ParameterOverrides: !Sub |
+                  {
+                    "HasuraImageURI" : { "Fn::GetParam" : ["hasura-output-artifacts", "imagedefinitions.json", "ImageURI"] },
+                    "SerumVialImageURI" : { "Fn::GetParam" : ["serum-vial-output-artifacts", "imagedefinitions.json", "ImageURI"] },
+                    "ListenerImageURI" : { "Fn::GetParam" : ["listener-output-artifacts", "imagedefinitions.json", "ImageURI"] },
+                    "DashboardImageURI" : { "Fn::GetParam" : ["dashboard-output-artifacts", "imagedefinitions.json", "ImageURI"] },
+                    "ResourcePrefix":  "s-${ResourcePrefix}",
+                    "HostedZoneId": "${HostedZoneId}",
+                    "HasuraDomainName": "staging-${HasuraDomainName}",
+                    "HasuraDomainCertificateArn": "${HasuraDomainCertificateArn}",
+                    "Ec2KeyNameParam": "${Ec2KeyNameParam}",
+                    "SolanaRpcUrl": "https://api.devnet.solana.com"
+                  }
+                RoleArn:
+                  Fn::GetAtt: [CloudformationExecutionRole, Arn]
+                StackName:
+                  !Join [
+                    '-',
+                    ['s', !Ref ResourcePrefix, !Ref 'AWS::AccountId', 'ECSCluster'],
+                  ]
+                TemplatePath: source-output-artifacts::Cloudformation/All-The-Machines.yml
+              RunOrder: 1
+            - Name: Approval
+              ActionTypeId:
+                Category: Approval
+                Owner: AWS
+                Version: 1
+                Provider: Manual
+              RunOrder: 2
+            - Name: DeleteTestStack
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: '1'
+              Configuration:
+                ActionMode: DELETE_ONLY
+                RoleArn: !GetAtt CloudformationExecutionRole.Arn
+                StackName: !Join [
+                    '-',
+                    ['s', !Ref ResourcePrefix, !Ref 'AWS::AccountId', 'ECSCluster'],
+                  ]
+              RunOrder: 3
+
+        # Deploy the project to Productionby executing All-The-Machines.yml file in the Source code with Cloudformation.
+        - Name: ProductionDeploy
           Actions:
             - Name: Deploy
               ActionTypeId:
@@ -453,7 +516,7 @@ Resources:
                 StackName:
                   !Join [
                     '-',
-                    [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'FargateECSCluster'],
+                    [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'ECSCluster'],
                   ]
                 TemplatePath: source-output-artifacts::Cloudformation/All-The-Machines.yml
               RunOrder: 1
