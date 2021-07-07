@@ -1,15 +1,18 @@
-FROM public.ecr.aws/s6m7j8l9/hayd/alpine-deno:latest
-
+FROM public.ecr.aws/s6m7j8l9/node:15-slim
 WORKDIR /app
+COPY ./listener/package*.json ./
+COPY ./listener/tsconfig.json ./
+COPY ./listener/src ./src
+COPY ./listener/types ./types
+RUN npm install
+RUN npm run build
 
-USER deno
 
-COPY ./listener/deps.ts .
-RUN deno cache deps.ts
-
-ADD ./listener .
-RUN deno cache main.ts
-
+FROM public.ecr.aws/s6m7j8l9/node:15-slim
+WORKDIR /app
+COPY ./listener/package*.json ./
+RUN npm install --only=production
+COPY --from=0 /app/dist .
 COPY ./markets.json .
 
-CMD ["run", "--allow-net", "--allow-env", "--allow-read", "main.ts"]
+CMD ["node", "main.js"]

@@ -516,7 +516,7 @@ Resources:
                 StackName:
                   !Join [
                     '-',
-                    [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'ECSCluster'],
+                    [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'All-The-Machines'],
                   ]
                 TemplatePath: source-output-artifacts::Cloudformation/All-The-Machines.yml
               RunOrder: 1

@@ -6,13 +6,13 @@ const data = require("../marketMeta.json");
 //   symbol
 // }
 
-// serum_clusters {
+// clusters {
 //   devnet
 // }
 
 // markets {
 //   id
-//   serum_cluster: devnet
+//   cluster: devnet
 //   serum_address
 //   expires_at: 2020-01
 //   quote_asset {
@@ -45,7 +45,7 @@ const objects = data.map((market, i) => {
 
   // id: i + 1,
   return `{
-    serum_cluster: devnet,
+    cluster: devnet,
     serum_address: "${serumMarketAddress}",
     expires_at: "${new Date(market.expiration * 1000).toISOString()}",
     quote_asset: {
