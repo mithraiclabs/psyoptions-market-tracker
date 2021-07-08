@@ -59,12 +59,6 @@ Resources:
       RepositoryName:
         !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'listener-repository']]
 
-  DashboardECRRepository:
-    Type: AWS::ECR::Repository
-    Properties:
-      RepositoryName:
-        !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'dashboard-repository']]
-
   # Create an S3 Bucket to store build artifacts
   S3Bucket:
     Type: AWS::S3::Bucket
@@ -293,39 +287,6 @@ Resources:
         # This file (buildspec.yml In Source code) contains commands to Create and Push a docker image to the ECR_REPOSITORY_URI
         BuildSpec: buildspec.yml
 
-  DashboardBuildProject:
-    Type: AWS::CodeBuild::Project
-    Properties:
-      Artifacts:
-        Type: CODEPIPELINE
-      Environment:
-        ComputeType: BUILD_GENERAL1_SMALL
-        Image: aws/codebuild/standard:4.0
-        ImagePullCredentialsType: CODEBUILD
-        PrivilegedMode: True
-        Type: LINUX_CONTAINER
-        EnvironmentVariables:
-          - Name: ECR_REPOSITORY_URI
-            Value:
-              !Join [
-                '.',
-                [
-                  !Ref 'AWS::AccountId',
-                  'dkr.ecr',
-                  !Ref 'AWS::Region',
-                  !Join ['/', ['amazonaws.com', !Ref 'DashboardECRRepository']],
-                ],
-              ]
-          - Name: PATH_TO_DOCKER_FILE
-            Value: './dashboard'
-      Name: !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'DashboardBuildProject']]
-      ServiceRole: !Ref CodeBuildExecutionRole
-      Source:
-        Type: CODEPIPELINE
-        # This file (buildspec.yml In Source code) contains commands to Create and Push a docker image to the ECR_REPOSITORY_URI
-        BuildSpec: buildspec.yml
-
-
   # Create CodePipeline with 3 stages (Source, Build and Deploy)
   CodePipeLine:
     Type: AWS::CodePipeline::Pipeline
@@ -402,19 +363,6 @@ Resources:
               Configuration:
                 ProjectName: !Ref ListenerBuildProject
               RunOrder: 1
-            - Name: DashboardBuild
-              ActionTypeId:
-                Category: Build
-                Owner: AWS
-                Version: 1
-                Provider: CodeBuild
-              OutputArtifacts:
-                - Name: dashboard-output-artifacts
-              InputArtifacts:
-                - Name: source-output-artifacts
-              Configuration:
-                ProjectName: !Ref DashboardBuildProject
-              RunOrder: 1
 
         # Deploy the project by executing All-The-Machines.yml file in the Source code with Cloudformation.
         - Name: StagingDeploy
@@ -430,7 +378,6 @@ Resources:
                 - Name: hasura-output-artifacts
                 - Name: serum-vial-output-artifacts
                 - Name: listener-output-artifacts
-                - Name: dashboard-output-artifacts
               Configuration:
                 ActionMode: CREATE_UPDATE
                 Capabilities: CAPABILITY_NAMED_IAM
@@ -440,7 +387,6 @@ Resources:
                     "HasuraImageURI" : { "Fn::GetParam" : ["hasura-output-artifacts", "imagedefinitions.json", "ImageURI"] },
                     "SerumVialImageURI" : { "Fn::GetParam" : ["serum-vial-output-artifacts", "imagedefinitions.json", "ImageURI"] },
                     "ListenerImageURI" : { "Fn::GetParam" : ["listener-output-artifacts", "imagedefinitions.json", "ImageURI"] },
-                    "DashboardImageURI" : { "Fn::GetParam" : ["dashboard-output-artifacts", "imagedefinitions.json", "ImageURI"] },
                     "ResourcePrefix":  "s-${ResourcePrefix}",
                     "HostedZoneId": "${HostedZoneId}",
                     "HasuraDomainName": "staging-${HasuraDomainName}",
@@ -493,7 +439,6 @@ Resources:
                 - Name: hasura-output-artifacts
                 - Name: serum-vial-output-artifacts
                 - Name: listener-output-artifacts
-                - Name: dashboard-output-artifacts
               Configuration:
                 ActionMode: CREATE_UPDATE
                 Capabilities: CAPABILITY_NAMED_IAM
@@ -503,7 +448,6 @@ Resources:
                     "HasuraImageURI" : { "Fn::GetParam" : ["hasura-output-artifacts", "imagedefinitions.json", "ImageURI"] },
                     "SerumVialImageURI" : { "Fn::GetParam" : ["serum-vial-output-artifacts", "imagedefinitions.json", "ImageURI"] },
                     "ListenerImageURI" : { "Fn::GetParam" : ["listener-output-artifacts", "imagedefinitions.json", "ImageURI"] },
-                    "DashboardImageURI" : { "Fn::GetParam" : ["dashboard-output-artifacts", "imagedefinitions.json", "ImageURI"] },
                     "ResourcePrefix":  "${ResourcePrefix}",
                     "HostedZoneId": "${HostedZoneId}",
                     "HasuraDomainName": "${HasuraDomainName}",

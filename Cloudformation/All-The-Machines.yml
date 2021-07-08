@@ -26,8 +26,6 @@ Parameters:
     Type: String
   ListenerImageURI:
     Type: String
-  DashboardImageURI:
-    Type: String
   HostedZoneId:
     Type: String
   HasuraDomainName:
