@@ -392,7 +392,9 @@ Resources:
                     "HasuraDomainName": "staging-${HasuraDomainName}",
                     "HasuraDomainCertificateArn": "${HasuraDomainCertificateArn}",
                     "Ec2KeyNameParam": "${Ec2KeyNameParam}",
-                    "SolanaRpcUrl": "https://api.devnet.solana.com"
+                    "SolanaRpcUrl": "https://api.devnet.solana.com",
+                    "ProgramId": "${ProgramId}",
+                    "DexProgramId": "${DexProgramId}"
                   }
                 RoleArn:
                   Fn::GetAtt: [CloudformationExecutionRole, Arn]
@@ -453,7 +455,9 @@ Resources:
                     "HasuraDomainName": "${HasuraDomainName}",
                     "HasuraDomainCertificateArn": "${HasuraDomainCertificateArn}",
                     "Ec2KeyNameParam": "${Ec2KeyNameParam}",
-                    "SolanaRpcUrl": "https://api.devnet.solana.com"
+                    "SolanaRpcUrl": "https://api.devnet.solana.com",
+                    "ProgramId": "${ProgramId}",
+                    "DexProgramId": "${DexProgramId}"
                   }
                 RoleArn:
                   Fn::GetAtt: [CloudformationExecutionRole, Arn]

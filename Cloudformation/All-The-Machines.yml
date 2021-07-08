@@ -347,6 +347,8 @@ Resources:
               Value: info
             - Name: SV_MARKETS_JSON
               Value: markets.json
+            - Name: SV_GRAPHQL_URL
+              Value: !Join ['', ['https://', !Ref HasuraDomainName, '/v1/graphql']]
           PortMappings:
             - ContainerPort: !Ref SerumVialContainerPort
               HostPort: !Ref SerumVialContainerPort
