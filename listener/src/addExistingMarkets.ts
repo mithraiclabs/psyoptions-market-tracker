@@ -1,7 +1,7 @@
 import { Connection, PublicKey } from "@solana/web3.js"
 import { Market } from "@mithraic-labs/psyoptions"
-import { Market as SerumMarket } from "@mithraic-labs/serum"
-import { addMarketToDatabase, addSerumAddressToPsyOptionsMarket, getMarkets, marketsMissingSerumAddress, wait } from "./graphQLClient"
+import { Market as SerumMarket, OpenOrders } from "@mithraic-labs/serum"
+import { addMarketToDatabase, addSerumAddressToPsyOptionsMarket, getEventsWithMissingOpenOrders, getMarkets, marketsMissingSerumAddress, MissingOpenOrdersResponse, upsertOpenOrder, wait } from "./graphQLClient"
 
 const USDCKey = new PublicKey(
   'E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF',
@@ -65,5 +65,27 @@ export const checkExistingMarketsForSerumMarket = async ({connection, serumProgr
         }
       })()
     }, starterPromise)
+  }
+}
+
+/**
+ * Get all missing OpenOrders accounts from the database and decode them from the chain
+ * @param connection {Connection}
+ * @param serumProgramId (PublicKey)
+ * @returns 
+ */
+export const addMissingOpenOrders = async (connection: Connection, serumProgramId: PublicKey) => {
+  try {
+    const {error, response} = await getEventsWithMissingOpenOrders();
+    if (error) return;
+    const {data} = await response.json() as MissingOpenOrdersResponse
+
+    data.serum_events.forEach(async (serumEvent) => {
+      const address = new PublicKey(serumEvent.account)
+      const openOrders = await OpenOrders.load(connection, address, serumProgramId)
+      upsertOpenOrder(openOrders)
+    })
+  } catch (error) {
+    console.error(error)
   }
 }

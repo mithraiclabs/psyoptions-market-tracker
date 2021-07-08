@@ -1,5 +1,5 @@
 import serumVialListener from "./serumVialListener"
-import { addExistingMarkets } from "./addExistingMarkets"
+import { addExistingMarkets, addMissingOpenOrders } from "./addExistingMarkets"
 import { 
   listenForNewPsyOptionsMarkets,
   listenForMissingSerumMarkets, 
@@ -18,8 +18,9 @@ const serumProgramId = new PublicKey(process.env['DEX_PROGRAM_ID']);
   // TODO fix this wait, it has to do with SerumVial's server not ready to accept connections
   await wait(5000)
 
-  serumVialListener(connection, serumProgramId);
-  addExistingMarkets({connection, psyOptionsProgramId, serumProgramId});
+  addMissingOpenOrders(connection, serumProgramId)
+  serumVialListener(connection, serumProgramId)
+  addExistingMarkets({connection, psyOptionsProgramId, serumProgramId})
   listenForNewPsyOptionsMarkets({connection, psyOptionsProgramId})
   listenForMissingSerumMarkets({connection, serumProgramId})
 })();
