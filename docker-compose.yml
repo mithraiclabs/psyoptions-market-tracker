@@ -65,16 +65,16 @@ services:
       PROGRAM_ID: ${PROGRAM_ID}
       DEX_PROGRAM_ID: ${DEX_PROGRAM_ID}
 
-  # dashboard:
-  #   restart: always
-  #   ports:
-  #     - 80:80
-  #   build:
-  #     context: ./
-  #     dockerfile: ./dashboard/Dockerfile
-  #     args:
-  #       GRAPHQL_URL: ${GRAPHQL_URL}
-  #       EXT_HOST: ${EXT_HOST}
+  dashboard:
+    restart: always
+    ports:
+      - 80:80
+    build:
+      context: ./
+      dockerfile: ./dashboard/Dockerfile
+      args:
+        GRAPHQL_URL: ${GRAPHQL_URL}
+        EXT_HOST: ${EXT_HOST}
 
 volumes:
   data:
