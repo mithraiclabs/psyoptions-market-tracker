@@ -31,6 +31,9 @@ const serumVialListener = (connection: Connection, serumProgramId: PublicKey) =>
 
     let activeSubscriptions: String[] = [];
     subscribeToActivePsyOptionMarkets({onEvent: (eventData) => {
+      // When SerumVial receives an update to Active PsyOptions markets the Serum producers could 
+      // take a while to spin up since they are handled sequentially with a delay to avoid rate limits.
+      //
       // TODO handle potential delay when SerumVial says the market is not available to subscribe
       const marketAddresses = eventData.data.markets.map(m => m.serum_address);
 
