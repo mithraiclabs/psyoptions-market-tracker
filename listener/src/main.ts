@@ -15,8 +15,6 @@ const serumProgramId = new PublicKey(process.env['DEX_PROGRAM_ID']);
 (async () => {
   // wait until hasura has started
   await waitUntilServerUp()
-  // TODO fix this wait, it has to do with SerumVial's server not ready to accept connections
-  await wait(5000)
 
   addMissingOpenOrders(connection, serumProgramId)
   serumVialListener(connection, serumProgramId)
