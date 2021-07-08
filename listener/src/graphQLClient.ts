@@ -1,6 +1,6 @@
 import { Market } from "@mithraic-labs/psyoptions";
 import { Connection, PublicKey } from "@solana/web3.js";
-import { Market as SerumMarket } from "@mithraic-labs/serum"
+import { Market as SerumMarket, OpenOrders } from "@mithraic-labs/serum"
 import fetch, { Response } from "node-fetch"
 import { execute } from 'apollo-link';
 import { WebSocketLink } from 'apollo-link-ws';
@@ -186,6 +186,30 @@ export const getMarkets = () => {
   return makeRequest({body})
 }
 
+export type MissingOpenOrdersResponse = {
+  data: {
+    serum_events: {account: string}[]
+  }
+}
+/**
+ * Gets all records from serum_events where the joined open_orders_account is missing
+ * 
+ * @returns 
+ */
+export const getEventsWithMissingOpenOrders = () => {
+  const body = {
+    query: `
+    query {
+      serum_events(where: {_not: {open_order_account: {}}}) {
+        account
+      }
+    }
+    `
+  }
+
+  return makeRequest({body})
+}
+
 export const marketsMissingSerumAddress = () => {
   const body = {
     query: `
@@ -230,6 +254,106 @@ export const addSerumAddressToPsyOptionsMarket = ({address, serumAddress}: {
       serum_address: serumAddress,
     },
   }
+
+  return makeRequest({body})
+}
+
+export const upsertOpenOrder = async (openOrders: OpenOrders) => {
+  const body = {
+    query: `
+    mutation (
+      $address: String!
+      $market: String!
+      $owner: String!
+    ) {
+      insert_open_order_accounts (
+        objects: [{
+          address: $address
+          market: $market
+          owner: $owner
+        }],
+        on_conflict: {
+          constraint: open_order_accounts_pkey,
+          update_columns: [market, owner]
+        }
+      ) {
+        returning {
+          owner
+        }
+      }
+    }
+      `,
+    variables: {
+      address: openOrders.address.toString(),
+      market: openOrders.market.toString(),
+      owner: openOrders.owner.toString(),
+    },
+  };
+
+  return makeRequest({body})
+}
+
+export const submitSerumEvent = async (data: any) => {
+  const body = {
+    query: `
+    mutation (
+      $account: String
+      $account_slot: Int
+      $client_id: String
+      $data: jsonb
+      $fee_tier: Int
+      $id: String
+      $order_id: String
+      $price: numeric
+      $serum_address: String!
+      $side: side
+      $size: numeric
+      $slot: bigint
+      $timestamp: timestamp
+      $type: serum_vial_event_types_enum
+      $version: Int
+    ) {
+      insert_serum_events_one(
+        object: {
+          account: $account
+          account_slot: $account_slot
+          client_id: $client_id
+          data: $data
+          fee_tier: $fee_tier
+          id: $id
+          order_id: $order_id
+          price: $price
+          side: $side
+          size: $size
+          slot: $slot
+          timestamp: $timestamp
+          type: $type
+          version: $version
+          serum_market_address: $serum_address
+        }
+      ) {
+        id
+      }
+    }
+      `,
+    variables: {
+      account: data.account,
+      account_slot: data.accountSlot,
+      client_id: data.clientId,
+      data,
+      fee_tier: data.feeTier,
+      id: data.id,
+      order_id: data.orderId,
+      price: data.price,
+      serum_address: data.market,
+      side: data.side,
+      size: data.size,
+      slot: data.slot,
+      timestamp: data.timestamp,
+      type: data.type,
+      version: data.version,
+    },
+  };
 
   return makeRequest({body})
 }

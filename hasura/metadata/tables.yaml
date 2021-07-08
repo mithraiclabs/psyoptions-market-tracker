@@ -50,8 +50,19 @@
     comment: ""
 - table:
     schema: public
+    name: open_order_accounts
+- table:
+    schema: public
     name: serum_events
   object_relationships:
+  - name: open_order_account
+    using:
+      manual_configuration:
+        remote_table:
+          schema: public
+          name: open_order_accounts
+        column_mapping:
+          account: address
   - name: serum_market
     using:
       foreign_key_constraint_on: serum_market_address
