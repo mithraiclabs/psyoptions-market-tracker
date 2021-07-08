@@ -19,12 +19,12 @@ Parameters:
   AwsRegion:
     Type: String
     Default: us-east-1
-  # SecretsArn:
-  #   Description: The ARN of the AWS Secrets Manager storing API keys or other sensitive information needed for the build
-  #   Type: String
-  # KmsArn:
-  #   Description: The ARN of the Key in Key Manager that's used to decrypt secrets
-  #   Type: String
+  ProgramId: 
+    Description: The PsyOptions program ID
+    Type: String
+  DexProgramId:
+    Description: The Serum DEX Program ID
+    Type: String
   HostedZoneId:
     Description: The ID of the Hosted zone where the DNS record sets should be created
     Type: String
