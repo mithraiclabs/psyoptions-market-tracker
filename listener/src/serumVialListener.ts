@@ -56,7 +56,6 @@ const serumVialListener = (connection: Connection, serumProgramId: PublicKey) =>
     if (!["trade", "open", "change"].includes(data.type)) return;
 
     submitSerumEvent(data)
-    console.log(`** recieved message with account ${data.account}`)
     const openOrders = await getOpenOrderAccount(connection, new PublicKey(data.account), serumProgramId)
     upsertOpenOrder(openOrders)
     
