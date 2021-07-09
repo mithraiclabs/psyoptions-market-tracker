@@ -46,12 +46,6 @@ Resources:
     Properties:
       RepositoryName:
         !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'hasura-repository']]
-
-  SerumVialECRRepository:
-    Type: AWS::ECR::Repository
-    Properties:
-      RepositoryName:
-        !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'serum-vial-repository']]
   
   ListenerECRRepository:
     Type: AWS::ECR::Repository
@@ -223,38 +217,6 @@ Resources:
         # This file (buildspec.yml In Source code) contains commands to Create and Push a docker image to the ECR_REPOSITORY_URI
         BuildSpec: buildspec.yml
 
-  SerumVialBuildProject:
-    Type: AWS::CodeBuild::Project
-    Properties:
-      Artifacts:
-        Type: CODEPIPELINE
-      Environment:
-        ComputeType: BUILD_GENERAL1_SMALL
-        Image: aws/codebuild/standard:4.0
-        ImagePullCredentialsType: CODEBUILD
-        PrivilegedMode: True
-        Type: LINUX_CONTAINER
-        EnvironmentVariables:
-          - Name: ECR_REPOSITORY_URI
-            Value:
-              !Join [
-                '.',
-                [
-                  !Ref 'AWS::AccountId',
-                  'dkr.ecr',
-                  !Ref 'AWS::Region',
-                  !Join ['/', ['amazonaws.com', !Ref 'SerumVialECRRepository']],
-                ],
-              ]
-          - Name: PATH_TO_DOCKER_FILE
-            Value: './serum-vial'
-      Name: !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'SerumVialBuildProject']]
-      ServiceRole: !Ref CodeBuildExecutionRole
-      Source:
-        Type: CODEPIPELINE
-        # This file (buildspec.yml In Source code) contains commands to Create and Push a docker image to the ECR_REPOSITORY_URI
-        BuildSpec: buildspec.yml
-
   ListenerBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
@@ -337,19 +299,6 @@ Resources:
               Configuration:
                 ProjectName: !Ref HasuraBuildProject
               RunOrder: 1
-            - Name: SerumVialBuild
-              ActionTypeId:
-                Category: Build
-                Owner: AWS
-                Version: 1
-                Provider: CodeBuild
-              OutputArtifacts:
-                - Name: serum-vial-output-artifacts
-              InputArtifacts:
-                - Name: source-output-artifacts
-              Configuration:
-                ProjectName: !Ref SerumVialBuildProject
-              RunOrder: 1
             - Name: ListenerBuild
               ActionTypeId:
                 Category: Build
@@ -376,7 +325,6 @@ Resources:
               InputArtifacts:
                 - Name: source-output-artifacts
                 - Name: hasura-output-artifacts
-                - Name: serum-vial-output-artifacts
                 - Name: listener-output-artifacts
               Configuration:
                 ActionMode: CREATE_UPDATE
@@ -385,14 +333,15 @@ Resources:
                 ParameterOverrides: !Sub |
                   {
                     "HasuraImageURI" : { "Fn::GetParam" : ["hasura-output-artifacts", "imagedefinitions.json", "ImageURI"] },
-                    "SerumVialImageURI" : { "Fn::GetParam" : ["serum-vial-output-artifacts", "imagedefinitions.json", "ImageURI"] },
                     "ListenerImageURI" : { "Fn::GetParam" : ["listener-output-artifacts", "imagedefinitions.json", "ImageURI"] },
                     "ResourcePrefix":  "s-${ResourcePrefix}",
                     "HostedZoneId": "${HostedZoneId}",
                     "HasuraDomainName": "staging-${HasuraDomainName}",
                     "HasuraDomainCertificateArn": "${HasuraDomainCertificateArn}",
                     "Ec2KeyNameParam": "${Ec2KeyNameParam}",
-                    "SolanaRpcUrl": "https://api.devnet.solana.com"
+                    "SolanaRpcUrl": "https://api.devnet.solana.com",
+                    "ProgramId": "${ProgramId}",
+                    "DexProgramId": "${DexProgramId}"
                   }
                 RoleArn:
                   Fn::GetAtt: [CloudformationExecutionRole, Arn]
@@ -437,7 +386,6 @@ Resources:
               InputArtifacts:
                 - Name: source-output-artifacts
                 - Name: hasura-output-artifacts
-                - Name: serum-vial-output-artifacts
                 - Name: listener-output-artifacts
               Configuration:
                 ActionMode: CREATE_UPDATE
@@ -446,14 +394,15 @@ Resources:
                 ParameterOverrides: !Sub |
                   {
                     "HasuraImageURI" : { "Fn::GetParam" : ["hasura-output-artifacts", "imagedefinitions.json", "ImageURI"] },
-                    "SerumVialImageURI" : { "Fn::GetParam" : ["serum-vial-output-artifacts", "imagedefinitions.json", "ImageURI"] },
                     "ListenerImageURI" : { "Fn::GetParam" : ["listener-output-artifacts", "imagedefinitions.json", "ImageURI"] },
                     "ResourcePrefix":  "${ResourcePrefix}",
                     "HostedZoneId": "${HostedZoneId}",
                     "HasuraDomainName": "${HasuraDomainName}",
                     "HasuraDomainCertificateArn": "${HasuraDomainCertificateArn}",
                     "Ec2KeyNameParam": "${Ec2KeyNameParam}",
-                    "SolanaRpcUrl": "https://api.devnet.solana.com"
+                    "SolanaRpcUrl": "https://api.devnet.solana.com",
+                    "ProgramId": "${ProgramId}",
+                    "DexProgramId": "${DexProgramId}"
                   }
                 RoleArn:
                   Fn::GetAtt: [CloudformationExecutionRole, Arn]

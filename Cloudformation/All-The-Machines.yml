@@ -28,8 +28,6 @@ Parameters:
     Default: 5432
   HasuraImageURI:
     Type: String
-  SerumVialImageURI:
-    Type: String
   ListenerImageURI:
     Type: String
   HostedZoneId:
@@ -334,7 +332,7 @@ Resources:
       ExecutionRoleArn: !Ref ExecutionRole
       ContainerDefinitions:
         - Name: !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'SerumVial']]
-          Image: !Ref SerumVialImageURI
+          Image: psyoptions/serum-vial:rc_02
           Cpu: 512
           Memory: 1024
           ReadonlyRootFilesystem: true
@@ -347,6 +345,8 @@ Resources:
               Value: info
             - Name: SV_MARKETS_JSON
               Value: markets.json
+            - Name: SV_GRAPHQL_URL
+              Value: !Join ['', ['https://', !Ref HasuraDomainName, '/v1/graphql']]
           PortMappings:
             - ContainerPort: !Ref SerumVialContainerPort
               HostPort: !Ref SerumVialContainerPort

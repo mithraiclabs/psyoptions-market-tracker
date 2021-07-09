@@ -1,10 +1,23 @@
 import { OpenOrders } from "@mithraic-labs/serum";
 import { Connection, PublicKey } from "@solana/web3.js";
-import { submitSerumEvent, subscribeToActivePsyOptionMarkets, upsertOpenOrder } from "./graphQLClient";
+import { submitSerumEvent, subscribeToActivePsyOptionMarkets, upsertOpenOrder, wait } from "./graphQLClient";
 import WebSocket = require("ws")
 
-const getOpenOrderAccount = async (connection: Connection, address: PublicKey, serumProgramId: PublicKey) => {
-  return OpenOrders.load(connection, address, serumProgramId);
+const getOpenOrderAccount = async (connection: Connection, address: PublicKey, serumProgramId: PublicKey, attempt = 0) => {
+  try {
+    if (attempt >= 0) {
+      const delay = attempt**2 * 250;
+      await wait(delay)
+    }
+    return await OpenOrders.load(connection, address, serumProgramId)
+  } catch (error) {
+    console.log('Caught error in getOpenOrderAccount')
+    console.error(error)
+    if (attempt < 10) {
+      return getOpenOrderAccount(connection, address, serumProgramId, attempt + 1)
+    }
+    return null;
+  }
 }
 
 let attempt = 1;
@@ -31,6 +44,9 @@ const serumVialListener = (connection: Connection, serumProgramId: PublicKey) =>
 
     let activeSubscriptions: String[] = [];
     subscribeToActivePsyOptionMarkets({onEvent: (eventData) => {
+      // When SerumVial receives an update to Active PsyOptions markets the Serum producers could 
+      // take a while to spin up since they are handled sequentially with a delay to avoid rate limits.
+      //
       // TODO handle potential delay when SerumVial says the market is not available to subscribe
       const marketAddresses = eventData.data.markets.map(m => m.serum_address);
 
