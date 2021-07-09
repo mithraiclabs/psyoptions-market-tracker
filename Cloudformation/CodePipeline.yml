@@ -325,7 +325,6 @@ Resources:
               InputArtifacts:
                 - Name: source-output-artifacts
                 - Name: hasura-output-artifacts
-                - Name: serum-vial-output-artifacts
                 - Name: listener-output-artifacts
               Configuration:
                 ActionMode: CREATE_UPDATE
@@ -387,7 +386,6 @@ Resources:
               InputArtifacts:
                 - Name: source-output-artifacts
                 - Name: hasura-output-artifacts
-                - Name: serum-vial-output-artifacts
                 - Name: listener-output-artifacts
               Configuration:
                 ActionMode: CREATE_UPDATE
