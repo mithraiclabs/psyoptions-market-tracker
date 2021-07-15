@@ -50,10 +50,10 @@
     buffer-layout "^1.2.0"
     rollup "^2.39.0"
 
-"@mithraic-labs/serum@^0.0.3":
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/@mithraic-labs/serum/-/serum-0.0.3.tgz#f40943900a95b8fc7cfc16c063a552212d82db68"
-  integrity sha512-YClkZEpcq9MhHqb5c0B+QvYGl4Dsbmdi8t98/FMEsNEmDa8MFYB8rFpVAIrFF+ufJc5i+V23Sx4U/Ez0+MFY1w==
+"@mithraic-labs/serum@^0.0.5":
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/@mithraic-labs/serum/-/serum-0.0.5.tgz#19ce4ad62fcdc33937a0796a2ba092996b360b29"
+  integrity sha512-nLrHeVjq2PviLq9fFF+1NM8XmrTxxuOgDhdBEen3wjNspzUC32b6qVB8Sdl231AhfByrpKq8lziYG/bDQMI2IA==
   dependencies:
     bn.js "^5.1.2"
     buffer-layout "^1.2.0"

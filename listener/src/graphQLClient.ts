@@ -6,6 +6,7 @@ import { execute } from 'apollo-link';
 import { WebSocketLink } from 'apollo-link-ws';
 import { SubscriptionClient } from 'subscriptions-transport-ws';
 import { gql } from 'graphql-tag';
+import { ActivePsyOptionsMarketsEventData } from "./types";
 
 const ws = require('ws');
 
@@ -114,6 +115,10 @@ export const addMarketToDatabase = async ({connection, market, serumQuoteAsset}:
       $serum_program_id: String
       $srm_base_mint_address: String
       $srm_quote_mint_address: String
+      $request_queue_address: String
+      $event_queue_address: String
+      $bids_address: String
+      $asks_address: String
     ) {
       insert_markets_one(
         object: {
@@ -142,8 +147,15 @@ export const addMarketToDatabase = async ({connection, market, serumQuoteAsset}:
               program_id: $serum_program_id,
               base_mint_address: $srm_base_mint_address,
               quote_mint_address: $srm_quote_mint_address,
+              request_queue_address: $request_queue_address,
+              event_queue_address: $event_queue_address,
+              bids_address: $bids_address,
+              asks_address: $asks_address,
             },
-            on_conflict: { constraint: serum_markets_pkey, update_columns: [program_id, base_mint_address, quote_mint_address] },
+            on_conflict: { constraint: serum_markets_pkey, update_columns: [
+              program_id, base_mint_address, quote_mint_address, request_queue_address,
+              event_queue_address, bids_address, asks_address
+            ] },
           },
           `: ''}
         }
@@ -166,6 +178,14 @@ export const addMarketToDatabase = async ({connection, market, serumQuoteAsset}:
       serum_program_id: serumProgramId.toString(),
       srm_base_mint_address: serumMarket?.baseMintAddress?.toString(),
       srm_quote_mint_address: serumMarket?.quoteMintAddress?.toString(),
+      // @ts-ignore: Serum Market poor type
+      request_queue_address: serumMarket?._decoded?.requestQueue?.toString(),
+      // @ts-ignore: Serum Market poor type
+      event_queue_address: serumMarket?._decoded?.eventQueue?.toString(),
+      // @ts-ignore: Serum Market poor type
+      bids_address: serumMarket?._decoded?.bids?.toString(),
+      // @ts-ignore: Serum Market poor type
+      asks_address: serumMarket?._decoded?.asks?.toString(),
     },
   };
 
@@ -385,13 +405,26 @@ export const subscribeToMissingSerumMarkets = ({onEvent, onError}: SubscriptionA
   })
 }
 
-export const subscribeToActivePsyOptionMarkets = ({onEvent, onError}: SubscriptionArguments) => {
+type ActivePsyOptionsMarketSubArgs = {
+  onEvent: (eventData: ActivePsyOptionsMarketsEventData) => void,
+  onError?: (error: Error) => void,
+}
+export const subscribeToActivePsyOptionMarkets = ({onEvent, onError}: ActivePsyOptionsMarketSubArgs) => {
   // To be considered active the PsyOptions market must have a Serum address and not be expired
   const SUBSCRIBE_QUERY = gql`
   subscription ActivePsyOptionMarkets {
     markets(where: {serum_address: {_is_null: false}, expires_at: {_gte: "now()"}}) {
       data
-      serum_address
+      serum_market {
+        address,
+        program_id,
+        base_mint_address,
+        quote_mint_address,
+        request_queue_address,
+        event_queue_address,
+        bids_address,
+        asks_address,
+      }
     }
   }
   `

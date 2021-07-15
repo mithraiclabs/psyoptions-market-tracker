@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@mithraic-labs/psyoptions": "^0.5.2",
-    "@mithraic-labs/serum": "^0.0.3",
+    "@mithraic-labs/serum": "^0.0.5",
     "@solana/spl-token": "^0.1.6",
     "@solana/web3.js": "^1.20.0",
     "apollo-link": "^1.2.14",
