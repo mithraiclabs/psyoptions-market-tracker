@@ -1,4 +1,3 @@
-import serumVialListener from "./serumVialListener"
 import { addExistingMarkets, addMissingOpenOrders } from "./addExistingMarkets"
 import { 
   listenForNewPsyOptionsMarkets,
@@ -17,7 +16,6 @@ const serumProgramId = new PublicKey(process.env['DEX_PROGRAM_ID']);
   await waitUntilServerUp()
 
   addMissingOpenOrders(connection, serumProgramId)
-  serumVialListener(connection, serumProgramId)
   addExistingMarkets({connection, psyOptionsProgramId, serumProgramId})
   listenForNewPsyOptionsMarkets({connection, psyOptionsProgramId})
   listenForMissingSerumMarkets({connection, serumProgramId})

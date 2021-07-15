@@ -30,37 +30,17 @@ services:
       HASURA_GRAPHQL_ENABLE_CONSOLE: "false"
       HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
 
-  serum-vial:
-    image: psyoptions/serum-vial:rc_02
-    restart: always
-    depends_on:
-      - hasura
-    ports:
-      - 8000:8000
-    volumes:
-      - ./markets.json:/markets.json
-    environment:
-      # https://github.com/tardis-dev/serum-vial#env-variables
-      SV_ENDPOINT: ${RPC_URL}
-      SV_LOG_LEVEL: debug
-      SV_MARKETS_JSON: markets.json
-      SV_GRAPHQL_URL: ${GRAPHQL_URL}
-
   listener:
     restart: always
     build:
       context: ./
       dockerfile: ./listener/Dockerfile
     depends_on:
-      - serum-vial
       - hasura
     volumes:
       - ./markets.json:/app/markets.json
     environment:
       GRAPHQL_URL: ${GRAPHQL_URL}
-      SERUM_VIAL_URL: ws://serum-vial:8000/v1/ws
-      # https://github.com/tardis-dev/serum-vial#supported-channels--corresponding-message-types
-      CHANNELS: trades, level1, level2, level3
       RPC_URL: ${RPC_URL}
       PROGRAM_ID: ${PROGRAM_ID}
       DEX_PROGRAM_ID: ${DEX_PROGRAM_ID}
