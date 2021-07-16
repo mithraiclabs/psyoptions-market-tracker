@@ -8,11 +8,9 @@ import { SubscriptionClient } from 'subscriptions-transport-ws';
 import { gql } from 'graphql-tag';
 import { ActivePsyOptionsMarketsEventData, IndexedSerumMarket } from "./types";
 import { EventTypes } from "./events.types";
-import { objectKeysCamelToSnake } from "./helpers";
+import { objectKeysCamelToSnake, wait } from "./helpers";
 
 const ws = require('ws');
-
-export const wait = (delayMS: number) => new Promise((resolve) => setTimeout(resolve, delayMS))
 
 const getWsClient = function(wsurl) {
   const client = new SubscriptionClient(
@@ -411,22 +409,15 @@ type ActivePsyOptionsMarketSubArgs = {
   onEvent: (eventData: ActivePsyOptionsMarketsEventData) => void,
   onError?: (error: Error) => void,
 }
+
 export const subscribeToActivePsyOptionMarkets = ({onEvent, onError}: ActivePsyOptionsMarketSubArgs) => {
   // To be considered active the PsyOptions market must have a Serum address and not be expired
   const SUBSCRIBE_QUERY = gql`
   subscription ActivePsyOptionMarkets {
-    markets(where: {serum_address: {_is_null: false}, expires_at: {_gte: "now()"}}) {
-      data
+    markets(where: {serum_address: {_is_null: false}, expires_at: {_gte: "now()"}}, order_by: {id: asc}) {
       serum_market {
         address,
-        program_id,
-        base_mint_address,
-        quote_mint_address,
-        request_queue_address,
         event_queue_address,
-        bids_address,
-        asks_address,
-        last_event_seq_num,
       }
     }
   }

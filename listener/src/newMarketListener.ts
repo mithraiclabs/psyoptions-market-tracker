@@ -1,8 +1,9 @@
 import { AccountInfo, Connection, PublicKey } from '@solana/web3.js'
 import { OPTION_MARKET_LAYOUT, Market as PsyOptionsMarket } from '@mithraic-labs/psyoptions'
-import { addMarketToDatabase, addSerumAddressToPsyOptionsMarket, marketsMissingSerumAddress, subscribeToMissingSerumMarkets, upsertSerumMarket, wait } from './graphQLClient';
+import { addMarketToDatabase, addSerumAddressToPsyOptionsMarket, subscribeToMissingSerumMarkets, upsertSerumMarket } from './graphQLClient';
 import { getMintDecimals, _MARKET_STATE_LAYOUT_V2 } from '@mithraic-labs/serum/lib/market'
 import { Market as SerumMarket } from '@mithraic-labs/serum'
+import { wait } from "./helpers"
 
 const USDCKey = new PublicKey(
   'E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF',
@@ -51,7 +52,7 @@ export const listenForNewPsyOptionsMarkets = ({
   )
 }
 
-export const listenForMissingSerumMarkets = async ({
+export const listenForMissingSerumMarkets = ({
   connection,
   serumProgramId
 }: {

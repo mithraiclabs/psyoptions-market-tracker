@@ -5,6 +5,7 @@ import BN from "bn.js";
 import { Change, Done, EventTypes, Fill } from "./events.types";
 import { getSerumMarketByAddress, submitSerumEvents, subscribeToActivePsyOptionMarkets, upsertSerumMarket } from "./graphQLClient";
 import { IndexedSerumMarket } from "./types";
+import { wait } from "./helpers"
 
 type ActiveSubscription = {
   market: Market;
@@ -138,9 +139,12 @@ export const handleEventQueueChange = (market: Market) => async (accountInfo: Ac
   }
 }
 
+/**
+ * Subscribe to active PsyOption Serum markets and index the events from the event queue.
+ */
 export const subscribeToSerumMarkets = (connection: Connection, serumProgramId: PublicKey) => {
   let activeSubscriptions: Record<string, ActiveSubscription> = {};
-  subscribeToActivePsyOptionMarkets({onEvent: (eventData) => {
+  subscribeToActivePsyOptionMarkets({onEvent: async (eventData) => {
     const activePsyOptionMarkets = eventData.data.markets;
     const serumMarketAddresses = activePsyOptionMarkets.map(m => m.serum_market.address);
 
@@ -158,7 +162,9 @@ export const subscribeToSerumMarkets = (connection: Connection, serumProgramId: 
     }
 
     // Subscribe to new PsyOption serum markets
-    activePsyOptionMarkets.forEach(async ({serum_market}) => {
+    const starterPromise = Promise.resolve(null);
+    await activePsyOptionMarkets.reduce(async (accumulator, {serum_market}) => {
+      await accumulator
       if (!activeSubscriptions[serum_market.address]) {
         // load the Serum market
         const market = await Market.load(connection, new PublicKey(serum_market.address), {}, serumProgramId)
@@ -167,12 +173,18 @@ export const subscribeToSerumMarkets = (connection: Connection, serumProgramId: 
           new PublicKey(serum_market.event_queue_address),
           handleEventQueueChange(market)
         )
+        // process the market initially
+        // @ts-ignore: ignore decoded
+        const accountInfo = await connection.getAccountInfo(market._decoded.eventQueue)
+        await handleEventQueueChange(market)(accountInfo, {slot: null})
         // add market to active subscription
         activeSubscriptions[serum_market.address] = {
           subscriptionId,
           market,
         }
+        return wait(1000)
       }
-    })
+      return starterPromise
+    }, starterPromise)
   }})
 }

@@ -36,7 +36,10 @@ export type ActivePsyOptionsMarketsEventData = {
   data: {
     markets: {
       data: PsyOptionsMarketData;
-      serum_market: IndexedSerumMarket;
+      serum_market: {
+        address: string;
+        event_queue_address: string;
+      };
     }[]
   }
 }

@@ -1,7 +1,8 @@
 import { Connection, PublicKey } from "@solana/web3.js"
 import { Market } from "@mithraic-labs/psyoptions"
 import { Market as SerumMarket, OpenOrders } from "@mithraic-labs/serum"
-import { addMarketToDatabase, addSerumAddressToPsyOptionsMarket, getEventsWithMissingOpenOrders, getMarkets, marketsMissingSerumAddress, MissingOpenOrdersResponse, upsertOpenOrder, wait } from "./graphQLClient"
+import { addMarketToDatabase, addSerumAddressToPsyOptionsMarket, getEventsWithMissingOpenOrders, getMarkets, marketsMissingSerumAddress, MissingOpenOrdersResponse, upsertOpenOrder } from "./graphQLClient"
+import { wait } from "./helpers"
 
 const USDCKey = new PublicKey(
   'E6Z6zLzk8MWY3TY8E87mr88FhGowEPJTeMWzkqtL6qkF',
