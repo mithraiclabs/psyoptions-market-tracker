@@ -1,6 +1,6 @@
 import { OpenOrders } from "@mithraic-labs/serum";
 import { Connection, PublicKey } from "@solana/web3.js";
-import { submitSerumEvent, subscribeToActivePsyOptionMarkets, upsertOpenOrder, wait } from "./graphQLClient";
+import { subscribeToActivePsyOptionMarkets, upsertOpenOrder, wait } from "./graphQLClient";
 import WebSocket = require("ws")
 
 const getOpenOrderAccount = async (connection: Connection, address: PublicKey, serumProgramId: PublicKey, attempt = 0) => {
@@ -42,13 +42,13 @@ const serumVialListener = (connection: Connection, serumProgramId: PublicKey) =>
     .split(",")
     .map((c) => c.trim());
 
-    let activeSubscriptions: String[] = [];
+    let activeSubscriptions: string[] = [];
     subscribeToActivePsyOptionMarkets({onEvent: (eventData) => {
       // When SerumVial receives an update to Active PsyOptions markets the Serum producers could 
       // take a while to spin up since they are handled sequentially with a delay to avoid rate limits.
       //
       // TODO handle potential delay when SerumVial says the market is not available to subscribe
-      const marketAddresses = eventData.data.markets.map(m => m.serum_address);
+      const marketAddresses = eventData.data.markets.map(m => m.serum_market.address);
 
       // find all addresses that are missing from the latest return and unsubscribe them
       const addressesToUnsub = activeSubscriptions.filter(addr => !marketAddresses.includes(addr))
@@ -83,7 +83,7 @@ const serumVialListener = (connection: Connection, serumProgramId: PublicKey) =>
   
     if (!["trade", "open", "change"].includes(data.type)) return;
 
-    submitSerumEvent(data)
+    // submitSerumEvent(data)
     const openOrders = await getOpenOrderAccount(connection, new PublicKey(data.account), serumProgramId)
     upsertOpenOrder(openOrders)
     

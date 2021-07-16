@@ -3,7 +3,7 @@ import {
   listenForNewPsyOptionsMarkets,
   listenForMissingSerumMarkets, 
 } from "./newMarketListener"
-import { wait, waitUntilServerUp } from "./graphQLClient"
+import { waitUntilServerUp } from "./graphQLClient"
 import { Connection, PublicKey } from "@solana/web3.js";
 
 const connection = new Connection(process.env['RPC_URL']);

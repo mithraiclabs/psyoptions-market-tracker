@@ -7,5 +7,6 @@ CREATE TABLE "public"."serum_markets"(
   "event_queue_address" text NOT NULL,
   "bids_address" text NOT NULL,
   "asks_address" text NOT NULL,
+  "last_event_seq_num" numeric,
   PRIMARY KEY ("address") 
 );

@@ -9,6 +9,7 @@ export type IndexedSerumMarket = {
   event_queue_address: string;
   bids_address: string;
   asks_address: string;
+  last_event_seq_num?: number;
 }
 
 type IndexedPsyOptionsMarket = {
