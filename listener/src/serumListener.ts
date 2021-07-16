@@ -117,8 +117,8 @@ const _mapEventToDataMessage = (
 }
 
 // TODO figure out how to make this resistant to concurrent calls for the same market 
-// (i.e. some database transactional lock that locks reading the serum_markets record 
-// while we are processing the sequence numbers )
+// (i.e. something like an advisory lock on a row, so we can determine if a market's 
+// event queue is being consumed by some other process)
 export const handleEventQueueChange = (connection: Connection, serumProgramId: PublicKey, market: Market) => async (accountInfo: AccountInfo<Buffer>, context: Context) => {
   // retrieve the last event queue sequence number that was tracked from the database
   const timestamp = new Date().toISOString()
