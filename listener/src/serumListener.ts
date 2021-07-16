@@ -2,7 +2,7 @@ import { Market, OpenOrders } from "@mithraic-labs/serum";
 import { decodeEventQueue, decodeEventsSince, Event, EVENT_QUEUE_LAYOUT } from "@mithraic-labs/serum/lib/queue";
 import { AccountInfo, Connection, Context, PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
-import { Change, Done, EventTypes, Fill } from "./events.types";
+import { Change, Done, EventTypes, Fill, Trade } from "./events.types";
 import { findOpenOrderByAddress, getSerumMarketByAddress, submitSerumEvents, subscribeToActivePsyOptionMarkets, upsertOpenOrder, upsertSerumMarket } from "./graphQLClient";
 import { IndexedSerumMarket } from "./types";
 import { wait } from "./helpers"
@@ -141,10 +141,41 @@ export const handleEventQueueChange = (connection: Connection, serumProgramId: P
     }
     // map the events to better structure
     const formattedEvents: EventTypes[] = []
+    const fillsForTradeMatching: Record<string, Fill> = {}
     events.forEach(event => {
       const formattedEvent = _mapEventToDataMessage(event, market, timestamp, context.slot)
       if (formattedEvent) {
-        formattedEvents.push(formattedEvent) 
+        formattedEvents.push(formattedEvent)
+        /**
+         * Below we capture a Trade event by matching opposite Fill events. This logic
+         * expects that the both Fill events for a trade will be decoded during the same
+         * iteration of reading the event queue. Basically this makes the assumption that
+         * corresponding Fill events will always occur during in the same block.
+         */
+        if (formattedEvent.type === 'fill') {
+          const key = `${formattedEvent.serumMarketAddress}|${formattedEvent.price}|${formattedEvent.size}|${formattedEvent.side}|${formattedEvent.maker}`
+          fillsForTradeMatching[key] = formattedEvent
+
+          const oppositeKey = `${formattedEvent.serumMarketAddress}|${formattedEvent.price}|${formattedEvent.size}|${formattedEvent.side === 'buy' ? 'sell' : 'buy'}|${!formattedEvent.maker}`
+          const marketFillOrder = fillsForTradeMatching[oppositeKey]
+
+          if (marketFillOrder) {
+            // get the maker opposite fill order id
+            const makerFillOrderId = marketFillOrder.orderId
+            const tradeId = `${formattedEvent.orderId}|${makerFillOrderId}`
+            const tradeEvent: Trade = {
+              type: 'trade',
+              serumMarketAddress: formattedEvent.serumMarketAddress,
+              timestamp,
+              slot: formattedEvent.slot,
+              id: tradeId,
+              side: formattedEvent.side,
+              price: formattedEvent.price,
+              size: formattedEvent.size
+            }
+            formattedEvents.push(tradeEvent)
+          }
+        }
       }
       addOpenOrdersIfMissing(connection, serumProgramId, event.openOrders)
     })

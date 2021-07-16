@@ -30,4 +30,12 @@ export interface Change extends DataMessage, OrderItem {
   readonly type: 'change'
 }
 
-export type EventTypes = Fill | Done | Change;
+export interface Trade extends DataMessage {
+  readonly type: 'trade'
+  readonly price: number
+  readonly size: number
+  readonly side: 'buy' | 'sell' // liquidity taker side
+  readonly id: string
+}
+
+export type EventTypes = Fill | Done | Change | Trade;
