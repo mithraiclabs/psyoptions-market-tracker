@@ -206,6 +206,20 @@ export const getMarkets = () => {
   return makeRequest({body})
 }
 
+export const findOpenOrderByAddress = (address: string) => {
+  const body = {
+    query: `
+    query {
+      open_order_accounts(where: {address: {_eq: "${address}"}}, limit: 1) {
+        address,
+      }
+    }
+    `
+  }
+
+  return makeRequest({body})
+}
+
 export type MissingOpenOrdersResponse = {
   data: {
     serum_events: {account: string}[]

@@ -1,15 +1,27 @@
-import { Market } from "@mithraic-labs/serum";
+import { Market, OpenOrders } from "@mithraic-labs/serum";
 import { decodeEventQueue, decodeEventsSince, Event, EVENT_QUEUE_LAYOUT } from "@mithraic-labs/serum/lib/queue";
 import { AccountInfo, Connection, Context, PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
 import { Change, Done, EventTypes, Fill } from "./events.types";
-import { getSerumMarketByAddress, submitSerumEvents, subscribeToActivePsyOptionMarkets, upsertSerumMarket } from "./graphQLClient";
+import { findOpenOrderByAddress, getSerumMarketByAddress, submitSerumEvents, subscribeToActivePsyOptionMarkets, upsertOpenOrder, upsertSerumMarket } from "./graphQLClient";
 import { IndexedSerumMarket } from "./types";
 import { wait } from "./helpers"
 
 type ActiveSubscription = {
   market: Market;
   subscriptionId: number;
+}
+
+const addOpenOrdersIfMissing = async (connection: Connection, serumProgramId: PublicKey, openOrdersKey: PublicKey) => {
+  const { error, response } = await findOpenOrderByAddress(openOrdersKey.toString())
+  if (response) {
+    const { data } = await response.json()
+    if (!data.open_order_accounts.length) {
+      // get the open order account info from the chain
+      const openOrders = await OpenOrders.load(connection, openOrdersKey, serumProgramId);
+      upsertOpenOrder(openOrders)
+    }
+  }
 }
 
 function divideBnToNumber(numerator: BN, denominator: BN): number {
@@ -104,13 +116,16 @@ const _mapEventToDataMessage = (
   return
 }
 
-export const handleEventQueueChange = (market: Market) => async (accountInfo: AccountInfo<Buffer>, context: Context) => {
+// TODO figure out how to make this resistant to concurrent calls for the same market 
+// (i.e. some database transactional lock that locks reading the serum_markets record 
+// while we are processing the sequence numbers )
+export const handleEventQueueChange = (connection: Connection, serumProgramId: PublicKey, market: Market) => async (accountInfo: AccountInfo<Buffer>, context: Context) => {
   // retrieve the last event queue sequence number that was tracked from the database
   const timestamp = new Date().toISOString()
   const {error, response} = await getSerumMarketByAddress(market.address.toString())
   if (error) return;
   const { data } = await response.json()
-  console.log('****** SERUM MARKETS ', data.serum_markets)
+
   if (data.serum_markets.length) {
     const indexedMarket = data.serum_markets[0] as IndexedSerumMarket
     let events: Event[] = [];
@@ -131,6 +146,7 @@ export const handleEventQueueChange = (market: Market) => async (accountInfo: Ac
       if (formattedEvent) {
         formattedEvents.push(formattedEvent) 
       }
+      addOpenOrdersIfMissing(connection, serumProgramId, event.openOrders)
     })
     // Submit all events to the DB
     if (formattedEvents.length) {
@@ -171,12 +187,12 @@ export const subscribeToSerumMarkets = (connection: Connection, serumProgramId: 
         // subscribe to the serum event queue
         const subscriptionId = connection.onAccountChange(
           new PublicKey(serum_market.event_queue_address),
-          handleEventQueueChange(market)
+          handleEventQueueChange(connection, serumProgramId, market)
         )
         // process the market initially
         // @ts-ignore: ignore decoded
         const accountInfo = await connection.getAccountInfo(market._decoded.eventQueue)
-        await handleEventQueueChange(market)(accountInfo, {slot: null})
+        await handleEventQueueChange(connection, serumProgramId, market)(accountInfo, {slot: null})
         // add market to active subscription
         activeSubscriptions[serum_market.address] = {
           subscriptionId,
