@@ -6,10 +6,11 @@ import { execute } from 'apollo-link';
 import { WebSocketLink } from 'apollo-link-ws';
 import { SubscriptionClient } from 'subscriptions-transport-ws';
 import { gql } from 'graphql-tag';
+import { ActivePsyOptionsMarketsEventData, IndexedSerumMarket } from "./types";
+import { EventTypes } from "./events.types";
+import { objectKeysCamelToSnake, wait } from "./helpers";
 
 const ws = require('ws');
-
-export const wait = (delayMS: number) => new Promise((resolve) => setTimeout(resolve, delayMS))
 
 const getWsClient = function(wsurl) {
   const client = new SubscriptionClient(
@@ -114,6 +115,10 @@ export const addMarketToDatabase = async ({connection, market, serumQuoteAsset}:
       $serum_program_id: String
       $srm_base_mint_address: String
       $srm_quote_mint_address: String
+      $request_queue_address: String
+      $event_queue_address: String
+      $bids_address: String
+      $asks_address: String
     ) {
       insert_markets_one(
         object: {
@@ -142,8 +147,15 @@ export const addMarketToDatabase = async ({connection, market, serumQuoteAsset}:
               program_id: $serum_program_id,
               base_mint_address: $srm_base_mint_address,
               quote_mint_address: $srm_quote_mint_address,
+              request_queue_address: $request_queue_address,
+              event_queue_address: $event_queue_address,
+              bids_address: $bids_address,
+              asks_address: $asks_address,
             },
-            on_conflict: { constraint: serum_markets_pkey, update_columns: [program_id, base_mint_address, quote_mint_address] },
+            on_conflict: { constraint: serum_markets_pkey, update_columns: [
+              program_id, base_mint_address, quote_mint_address, request_queue_address,
+              event_queue_address, bids_address, asks_address
+            ] },
           },
           `: ''}
         }
@@ -166,6 +178,14 @@ export const addMarketToDatabase = async ({connection, market, serumQuoteAsset}:
       serum_program_id: serumProgramId.toString(),
       srm_base_mint_address: serumMarket?.baseMintAddress?.toString(),
       srm_quote_mint_address: serumMarket?.quoteMintAddress?.toString(),
+      // @ts-ignore: Serum Market poor type
+      request_queue_address: serumMarket?._decoded?.requestQueue?.toString(),
+      // @ts-ignore: Serum Market poor type
+      event_queue_address: serumMarket?._decoded?.eventQueue?.toString(),
+      // @ts-ignore: Serum Market poor type
+      bids_address: serumMarket?._decoded?.bids?.toString(),
+      // @ts-ignore: Serum Market poor type
+      asks_address: serumMarket?._decoded?.asks?.toString(),
     },
   };
 
@@ -178,6 +198,20 @@ export const getMarkets = () => {
     query {
         markets {
         address
+      }
+    }
+    `
+  }
+
+  return makeRequest({body})
+}
+
+export const findOpenOrderByAddress = (address: string) => {
+  const body = {
+    query: `
+    query {
+      open_order_accounts(where: {address: {_eq: "${address}"}}, limit: 1) {
+        address,
       }
     }
     `
@@ -202,6 +236,28 @@ export const getEventsWithMissingOpenOrders = () => {
     query {
       serum_events(where: {_not: {open_order_account: {}}}) {
         account
+      }
+    }
+    `
+  }
+
+  return makeRequest({body})
+}
+
+export const getSerumMarketByAddress = (address: string) => {
+  const body = {
+    query: `
+    query {
+      serum_markets(where: {address: {_eq: "${address}"}}, limit: 1) {
+        address,
+        program_id,
+        base_mint_address,
+        quote_mint_address,
+        request_queue_address,
+        event_queue_address,
+        bids_address,
+        asks_address,
+        last_event_seq_num,
       }
     }
     `
@@ -293,66 +349,44 @@ export const upsertOpenOrder = async (openOrders: OpenOrders) => {
   return makeRequest({body})
 }
 
-export const submitSerumEvent = async (data: any) => {
+export const upsertSerumMarket = async (serumMarket: IndexedSerumMarket) => {
   const body = {
     query: `
-    mutation (
-      $account: String
-      $account_slot: Int
-      $client_id: String
-      $data: jsonb
-      $fee_tier: Int
-      $id: String
-      $order_id: String
-      $price: numeric
-      $serum_address: String!
-      $side: side
-      $size: numeric
-      $slot: bigint
-      $timestamp: timestamp
-      $type: serum_vial_event_types_enum
-      $version: Int
-    ) {
-      insert_serum_events_one(
-        object: {
-          account: $account
-          account_slot: $account_slot
-          client_id: $client_id
-          data: $data
-          fee_tier: $fee_tier
-          id: $id
-          order_id: $order_id
-          price: $price
-          side: $side
-          size: $size
-          slot: $slot
-          timestamp: $timestamp
-          type: $type
-          version: $version
-          serum_market_address: $serum_address
+    mutation ($object: serum_markets_insert_input!) {
+      insert_serum_markets_one (
+        object: $object,
+        on_conflict: {
+          constraint: serum_markets_pkey,
+          update_columns: [last_event_seq_num]
         }
       ) {
-        id
+          address
       }
     }
       `,
     variables: {
-      account: data.account,
-      account_slot: data.accountSlot,
-      client_id: data.clientId,
-      data,
-      fee_tier: data.feeTier,
-      id: data.id,
-      order_id: data.orderId,
-      price: data.price,
-      serum_address: data.market,
-      side: data.side,
-      size: data.size,
-      slot: data.slot,
-      timestamp: data.timestamp,
-      type: data.type,
-      version: data.version,
+      object: serumMarket
     },
+  };
+
+  return makeRequest({body})
+}
+
+export const submitSerumEvents = async (events: EventTypes[]) => {
+  const objects = events.map(event => objectKeysCamelToSnake(event))
+  const body = {
+    query: `
+    mutation ($objects: [serum_events_insert_input!]!) {
+      insert_serum_events(
+        objects: $objects
+      ) {
+        returning {
+          serum_market_address
+        }
+      }
+    }
+      `,
+    variables: { objects },
   };
 
   return makeRequest({body})
@@ -385,13 +419,20 @@ export const subscribeToMissingSerumMarkets = ({onEvent, onError}: SubscriptionA
   })
 }
 
-export const subscribeToActivePsyOptionMarkets = ({onEvent, onError}: SubscriptionArguments) => {
+type ActivePsyOptionsMarketSubArgs = {
+  onEvent: (eventData: ActivePsyOptionsMarketsEventData) => void,
+  onError?: (error: Error) => void,
+}
+
+export const subscribeToActivePsyOptionMarkets = ({onEvent, onError}: ActivePsyOptionsMarketSubArgs) => {
   // To be considered active the PsyOptions market must have a Serum address and not be expired
   const SUBSCRIBE_QUERY = gql`
   subscription ActivePsyOptionMarkets {
-    markets(where: {serum_address: {_is_null: false}, expires_at: {_gte: "now()"}}) {
-      data
-      serum_address
+    markets(where: {serum_address: {_is_null: false}, expires_at: {_gte: "now()"}}, order_by: {id: asc}) {
+      serum_market {
+        address,
+        event_queue_address,
+      }
     }
   }
   `
