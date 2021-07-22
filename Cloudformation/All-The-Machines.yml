@@ -40,6 +40,11 @@ Parameters:
   Ec2KeyNameParam:
     Description: The name of the EC2 keypair that is default added to instances
     Type: String
+  SolanaCluster:
+    Description: The Solana cluster to listen to
+    Type: String
+    AllowedValues: ["devnet", "mainnet", "testnet"]
+    Default: devnet
 
 Mappings: 
   RegionMap:

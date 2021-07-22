@@ -6,6 +6,8 @@ import { Change, Done, EventTypes, Fill, Trade } from "./events.types";
 import { findOpenOrderByAddress, getSerumMarketByAddress, submitSerumEvents, subscribeToActivePsyOptionMarkets, upsertOpenOrder, upsertSerumMarket } from "./graphQLClient";
 import { IndexedSerumMarket } from "./types";
 import { wait } from "./helpers"
+import { ClusterEnv } from "@mithraic-labs/market-meta/dist/types";
+import { batchSerumMarkets } from "./helpers/serum";
 
 type ActiveSubscription = {
   market: Market;
@@ -234,4 +236,33 @@ export const subscribeToSerumMarkets = (connection: Connection, serumProgramId: 
       return starterPromise
     }, starterPromise)
   }})
+}
+
+export const subscribeToPackagedSerumMarkets = async (connection: Connection, clusterMeta: ClusterEnv) => {
+  const activeMarkets = clusterMeta.optionMarkets.filter(marketMeta => 
+    marketMeta.expiration * 1000 > new Date().getTime()
+  )
+  const serumMarketKeys = activeMarkets.map(marketMeta => 
+    ({
+      key: new PublicKey(marketMeta.serumMarketAddress),
+      programId: new PublicKey(marketMeta.serumProgramId)
+    })
+  )
+
+  // batch get the Serum market data
+  const markets = await batchSerumMarkets(connection, serumMarketKeys)
+
+  markets.forEach(async market => {
+    // subscribe to the serum event queue
+    connection.onAccountChange(
+      // @ts-ignore: serum decoded
+      new PublicKey(market._decoded.eventQueue),
+      handleEventQueueChange(connection, market.programId, market)
+    )
+    // process the market initially
+    // @ts-ignore: ignore decoded
+    const accountInfo = await connection.getAccountInfo(market._decoded.eventQueue)
+    await handleEventQueueChange(connection, market.programId, market)(accountInfo, {slot: null})
+  })
+  
 }
