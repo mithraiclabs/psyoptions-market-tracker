@@ -1,12 +1,10 @@
 import { waitUntilServerUp } from "./graphQLClient"
-import { Connection, PublicKey } from "@solana/web3.js";
+import { Connection } from "@solana/web3.js";
 import { subscribeToPackagedSerumMarkets } from "./serumListener";
 import { MarketMeta } from "@mithraic-labs/market-meta"
 import { ClusterEnv } from "@mithraic-labs/market-meta/dist/types";
 
 const connection = new Connection(process.env['RPC_URL']);
-const psyOptionsProgramId = new PublicKey(process.env['PROGRAM_ID']);
-const serumProgramId = new PublicKey(process.env['DEX_PROGRAM_ID']);
 const solanaCluster = process.env['SOLANA_CLUSTER'];
 
 
