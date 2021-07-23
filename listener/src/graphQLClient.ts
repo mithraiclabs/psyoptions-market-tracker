@@ -8,7 +8,7 @@ import { SubscriptionClient } from 'subscriptions-transport-ws';
 import { gql } from 'graphql-tag';
 import { ActivePsyOptionsMarketsEventData, IndexedSerumMarket } from "./types";
 import { EventTypes } from "./events.types";
-import { objectKeysCamelToSnake, wait } from "./helpers";
+import { objectKeysCamelToSnake, wait } from "./helpers/helpers";
 
 const ws = require('ws');
 

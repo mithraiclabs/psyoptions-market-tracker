@@ -12,12 +12,6 @@ Parameters:
     Description: The RPC URL used to connect with the solana blockchain
     Type: String
     Default: https://api.devnet.solana.com
-  ProgramId: 
-    Description: The PsyOptions program ID
-    Type: String
-  DexProgramId:
-    Description: The Serum DEX Program ID
-    Type: String
   HasuraContainerPort:
     Type: Number
     Default: 8080
@@ -40,6 +34,11 @@ Parameters:
   Ec2KeyNameParam:
     Description: The name of the EC2 keypair that is default added to instances
     Type: String
+  SolanaCluster:
+    Description: The Solana cluster to listen to
+    Type: String
+    AllowedValues: ["devnet", "mainnet", "testnet"]
+    Default: devnet
 
 Mappings: 
   RegionMap:
@@ -478,10 +477,6 @@ Resources:
               Value: trades, level1, level2, level3
             - Name: RPC_URL
               Value: !Ref SolanaRpcUrl
-            - Name: PROGRAM_ID
-              Value: !Ref ProgramId
-            - Name: DEX_PROGRAM_ID
-              Value: !Ref DexProgramId
           LogConfiguration:
             LogDriver: awslogs
             Options:

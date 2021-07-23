@@ -42,8 +42,7 @@ services:
     environment:
       GRAPHQL_URL: ${GRAPHQL_URL}
       RPC_URL: ${RPC_URL}
-      PROGRAM_ID: ${PROGRAM_ID}
-      DEX_PROGRAM_ID: ${DEX_PROGRAM_ID}
+      SOLANA_CLUSTER: devnet
 
   # dashboard:
   #   restart: always

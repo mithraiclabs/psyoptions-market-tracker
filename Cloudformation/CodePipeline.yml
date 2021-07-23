@@ -19,12 +19,6 @@ Parameters:
   AwsRegion:
     Type: String
     Default: us-east-1
-  ProgramId: 
-    Description: The PsyOptions program ID
-    Type: String
-  DexProgramId:
-    Description: The Serum DEX Program ID
-    Type: String
   HostedZoneId:
     Description: The ID of the Hosted zone where the DNS record sets should be created
     Type: String
@@ -38,6 +32,11 @@ Parameters:
   Ec2KeyNameParam:
     Description: The name of the EC2 keypair that is default added to instances
     Type: String
+  SolanaCluster:
+    Description: The Solana cluster to listen to
+    Type: String
+    AllowedValues: ["devnet", "mainnet", "testnet"]
+    Default: devnet
 
 Resources:
   # Create an ECR Repository to store docker images
@@ -340,8 +339,7 @@ Resources:
                     "HasuraDomainCertificateArn": "${HasuraDomainCertificateArn}",
                     "Ec2KeyNameParam": "${Ec2KeyNameParam}",
                     "SolanaRpcUrl": "https://api.devnet.solana.com",
-                    "ProgramId": "${ProgramId}",
-                    "DexProgramId": "${DexProgramId}"
+                    "SolanaCluster": "${SolanaCluster}"
                   }
                 RoleArn:
                   Fn::GetAtt: [CloudformationExecutionRole, Arn]
@@ -401,8 +399,7 @@ Resources:
                     "HasuraDomainCertificateArn": "${HasuraDomainCertificateArn}",
                     "Ec2KeyNameParam": "${Ec2KeyNameParam}",
                     "SolanaRpcUrl": "https://api.devnet.solana.com",
-                    "ProgramId": "${ProgramId}",
-                    "DexProgramId": "${DexProgramId}"
+                    "SolanaCluster": "${SolanaCluster}"
                   }
                 RoleArn:
                   Fn::GetAtt: [CloudformationExecutionRole, Arn]

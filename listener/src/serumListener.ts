@@ -5,12 +5,8 @@ import BN from "bn.js";
 import { Change, Done, EventTypes, Fill, Trade } from "./events.types";
 import { findOpenOrderByAddress, getSerumMarketByAddress, submitSerumEvents, subscribeToActivePsyOptionMarkets, upsertOpenOrder, upsertSerumMarket } from "./graphQLClient";
 import { IndexedSerumMarket } from "./types";
-import { wait } from "./helpers"
-
-type ActiveSubscription = {
-  market: Market;
-  subscriptionId: number;
-}
+import { ClusterEnv } from "@mithraic-labs/market-meta/dist/types";
+import { batchSerumMarkets } from "./helpers/serum";
 
 const addOpenOrdersIfMissing = async (connection: Connection, serumProgramId: PublicKey, openOrdersKey: PublicKey) => {
   const { error, response } = await findOpenOrderByAddress(openOrdersKey.toString())
@@ -186,52 +182,31 @@ export const handleEventQueueChange = (connection: Connection, serumProgramId: P
   }
 }
 
-/**
- * Subscribe to active PsyOption Serum markets and index the events from the event queue.
- */
-export const subscribeToSerumMarkets = (connection: Connection, serumProgramId: PublicKey) => {
-  let activeSubscriptions: Record<string, ActiveSubscription> = {};
-  subscribeToActivePsyOptionMarkets({onEvent: async (eventData) => {
-    const activePsyOptionMarkets = eventData.data.markets;
-    const serumMarketAddresses = activePsyOptionMarkets.map(m => m.serum_market.address);
+export const subscribeToPackagedSerumMarkets = async (connection: Connection, clusterMeta: ClusterEnv) => {
+  const activeMarkets = clusterMeta.optionMarkets.filter(marketMeta => 
+    marketMeta.expiration * 1000 > new Date().getTime()
+  )
+  const serumMarketKeys = activeMarkets.map(marketMeta => 
+    ({
+      key: new PublicKey(marketMeta.serumMarketAddress),
+      programId: new PublicKey(marketMeta.serumProgramId)
+    })
+  )
 
-    // find all addresses that are missing from the latest return and unsubscribe them
-    const addressesToUnsub = Object.keys(activeSubscriptions).filter(addr => !serumMarketAddresses.includes(addr))
-    if (addressesToUnsub.length) {
-      // unsubscribe dead inactive markets
-      addressesToUnsub.forEach(address => {
-        const subscription = activeSubscriptions[address]
-        if (subscription) {
-          connection.removeAccountChangeListener(subscription.subscriptionId)
-          delete activeSubscriptions[address]
-        }
-      })
-    }
+  // batch get the Serum market data
+  const markets = await batchSerumMarkets(connection, serumMarketKeys)
 
-    // Subscribe to new PsyOption serum markets
-    const starterPromise = Promise.resolve(null);
-    await activePsyOptionMarkets.reduce(async (accumulator, {serum_market}) => {
-      await accumulator
-      if (!activeSubscriptions[serum_market.address]) {
-        // load the Serum market
-        const market = await Market.load(connection, new PublicKey(serum_market.address), {}, serumProgramId)
-        // subscribe to the serum event queue
-        const subscriptionId = connection.onAccountChange(
-          new PublicKey(serum_market.event_queue_address),
-          handleEventQueueChange(connection, serumProgramId, market)
-        )
-        // process the market initially
-        // @ts-ignore: ignore decoded
-        const accountInfo = await connection.getAccountInfo(market._decoded.eventQueue)
-        await handleEventQueueChange(connection, serumProgramId, market)(accountInfo, {slot: null})
-        // add market to active subscription
-        activeSubscriptions[serum_market.address] = {
-          subscriptionId,
-          market,
-        }
-        return wait(1000)
-      }
-      return starterPromise
-    }, starterPromise)
-  }})
+  markets.forEach(async market => {
+    // subscribe to the serum event queue
+    connection.onAccountChange(
+      // @ts-ignore: serum decoded
+      new PublicKey(market._decoded.eventQueue),
+      handleEventQueueChange(connection, market.programId, market)
+    )
+    // process the market initially
+    // @ts-ignore: serum decoded
+    const accountInfo = await connection.getAccountInfo(market._decoded.eventQueue)
+    await handleEventQueueChange(connection, market.programId, market)(accountInfo, {slot: null})
+  })
+  
 }
