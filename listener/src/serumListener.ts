@@ -5,14 +5,8 @@ import BN from "bn.js";
 import { Change, Done, EventTypes, Fill, Trade } from "./events.types";
 import { findOpenOrderByAddress, getSerumMarketByAddress, submitSerumEvents, subscribeToActivePsyOptionMarkets, upsertOpenOrder, upsertSerumMarket } from "./graphQLClient";
 import { IndexedSerumMarket } from "./types";
-import { wait } from "./helpers/helpers"
 import { ClusterEnv } from "@mithraic-labs/market-meta/dist/types";
 import { batchSerumMarkets } from "./helpers/serum";
-
-type ActiveSubscription = {
-  market: Market;
-  subscriptionId: number;
-}
 
 const addOpenOrdersIfMissing = async (connection: Connection, serumProgramId: PublicKey, openOrdersKey: PublicKey) => {
   const { error, response } = await findOpenOrderByAddress(openOrdersKey.toString())
@@ -210,7 +204,7 @@ export const subscribeToPackagedSerumMarkets = async (connection: Connection, cl
       handleEventQueueChange(connection, market.programId, market)
     )
     // process the market initially
-    // @ts-ignore: ignore decoded
+    // @ts-ignore: serum decoded
     const accountInfo = await connection.getAccountInfo(market._decoded.eventQueue)
     await handleEventQueueChange(connection, market.programId, market)(accountInfo, {slot: null})
   })
