@@ -13,6 +13,6 @@ WORKDIR /app
 COPY ./listener/package*.json ./
 RUN npm install --only=production
 COPY --from=0 /app/dist .
-COPY ./markets.json .
+COPY ./marketMeta.json .
 
 CMD ["node", "main.js"]
