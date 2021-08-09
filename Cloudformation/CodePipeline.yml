@@ -377,6 +377,7 @@ Resources:
                 BranchName: !Ref GithubBranch
                 DetectChanges: true
                 OutputArtifactFormat: 'CODE_ZIP'
+                DetectChanges: false
               Region: !Ref AwsRegion
               RunOrder: 1
 
