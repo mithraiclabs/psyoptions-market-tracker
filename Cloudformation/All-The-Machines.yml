@@ -477,6 +477,8 @@ Resources:
               Value: trades, level1, level2, level3
             - Name: RPC_URL
               Value: !Ref SolanaRpcUrl
+            - Name: SOLANA_CLUSTER
+              Value: !Ref SolanaCluster
           LogConfiguration:
             LogDriver: awslogs
             Options:
