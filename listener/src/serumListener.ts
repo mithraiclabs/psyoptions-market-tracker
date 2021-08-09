@@ -197,6 +197,7 @@ export const subscribeToPackagedSerumMarkets = async (connection: Connection, cl
   const markets = await batchSerumMarkets(connection, serumMarketKeys)
 
   markets.forEach(async market => {
+    console.log('**** subscribing to market ', market.address.toString())
     // subscribe to the serum event queue
     connection.onAccountChange(
       // @ts-ignore: serum decoded
