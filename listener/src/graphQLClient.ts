@@ -32,6 +32,8 @@ export const waitUntilServerUp = async () => {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
+          "X-Hasura-Admin-Secret": process.env["HASURA_GRAPHQL_ADMIN_SECRET"],
+          "X-Hasura-Role": "admin",
         },
         body: JSON.stringify({query: {}}),
       });

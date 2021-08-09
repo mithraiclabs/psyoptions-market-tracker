@@ -29,6 +29,8 @@ services:
       HASURA_GRAPHQL_DEV_MODE: "true"
       HASURA_GRAPHQL_ENABLE_CONSOLE: "false"
       HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
+      HASURA_GRAPHQL_ADMIN_SECRET: ${HASURA_GRAPHQL_ADMIN_SECRET}
+      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: anonymous
 
   listener:
     restart: always
@@ -42,7 +44,8 @@ services:
     environment:
       GRAPHQL_URL: ${GRAPHQL_URL}
       RPC_URL: ${RPC_URL}
-      SOLANA_CLUSTER: localnet
+      SOLANA_CLUSTER: devnet
+      HASURA_GRAPHQL_ADMIN_SECRET: ${HASURA_GRAPHQL_ADMIN_SECRET}
 
   # dashboard:
   #   restart: always

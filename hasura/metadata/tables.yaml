@@ -16,10 +16,24 @@
         table:
           schema: public
           name: markets
+  select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+      - mint_address
+      - symbol
+      filter: {}
 - table:
     schema: public
     name: clusters
   is_enum: true
+  select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+      - value
+      - url
+      filter: {}
 - table:
     schema: public
     name: markets
@@ -48,9 +62,34 @@
         schema: public
         name: option_type
     comment: ""
+  select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+      - id
+      - address
+      - cluster
+      - serum_address
+      - expires_at
+      - data
+      - quote_asset_mint_address
+      - underlying_asset_mint_address
+      - quote_asset_per_contract
+      - underlying_asset_per_contract
+      computed_fields:
+      - option_type
+      filter: {}
 - table:
     schema: public
     name: open_order_accounts
+  select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+      - address
+      - owner
+      - market
+      filter: {}
 - table:
     schema: public
     name: serum_events
@@ -69,6 +108,27 @@
   - name: serum_vial_event_type
     using:
       foreign_key_constraint_on: type
+  select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+      - serum_market_address
+      - type
+      - timestamp
+      - slot
+      - version
+      - id
+      - side
+      - price
+      - size
+      - order_id
+      - client_id
+      - account
+      - account_slot
+      - fee_tier
+      - fee_cost
+      - maker
+      filter: {}
 - table:
     schema: public
     name: serum_markets
@@ -100,7 +160,32 @@
         schema: public
         name: change
     comment: ""
+  select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+      - address
+      - program_id
+      - base_mint_address
+      - quote_mint_address
+      - request_queue_address
+      - event_queue_address
+      - bids_address
+      - asks_address
+      - last_event_seq_num
+      computed_fields:
+      - change
+      - latest_price
+      - volume
+      filter: {}
 - table:
     schema: public
     name: serum_vial_event_types
   is_enum: true
+  select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+      - value
+      - comment
+      filter: {}
