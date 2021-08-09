@@ -330,7 +330,7 @@ Resources:
                     "ListenerImageURI" : { "Fn::GetParam" : ["listener-output-artifacts", "imagedefinitions.json", "ImageURI"] },
                     "ResourcePrefix":  "s-${ResourcePrefix}",
                     "HostedZoneId": "${HostedZoneId}",
-                    "HasuraDomainName": "staging-${HasuraDomainName}",
+                    "HasuraDomainName": "devnet-${HasuraDomainName}",
                     "HasuraDomainCertificateArn": "${HasuraDomainCertificateArn}",
                     "Ec2KeyNameParam": "${Ec2KeyNameParam}",
                     "SolanaRpcUrl": "https://api.devnet.solana.com",
