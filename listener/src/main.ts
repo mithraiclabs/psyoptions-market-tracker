@@ -10,6 +10,7 @@ const solanaCluster = process.env['SOLANA_CLUSTER'];
 
 
 (async () => {
+  console.log('Starting listener')
   // wait until hasura has started
   await waitUntilServerUp()
 
