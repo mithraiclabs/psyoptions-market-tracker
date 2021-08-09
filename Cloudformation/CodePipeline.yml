@@ -251,7 +251,7 @@ Resources:
       ArtifactStore:
         Location: !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 's3bucket']]
         Type: S3
-      Name: !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'CodePipeLine']]
+      Name: !Join ['-', ['s', !Ref ResourcePrefix, !Ref 'AWS::AccountId', 'CodePipeLine']]
       RestartExecutionOnUpdate: False
       RoleArn:
         Fn::GetAtt: [CodePipeLineExecutionRole, Arn]
