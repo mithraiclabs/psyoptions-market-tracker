@@ -7,6 +7,7 @@ import { findOpenOrderByAddress, getSerumMarketByAddress, submitSerumEvents, sub
 import { IndexedSerumMarket } from "./types";
 import { ClusterEnv } from "@mithraic-labs/market-meta/dist/types";
 import { batchSerumMarkets } from "./helpers/serum";
+import { wait } from "./helpers/helpers";
 
 const addOpenOrdersIfMissing = async (connection: Connection, serumProgramId: PublicKey, openOrdersKey: PublicKey) => {
   const { error, response } = await findOpenOrderByAddress(openOrdersKey.toString())
@@ -121,64 +122,81 @@ export const handleEventQueueChange = (connection: Connection, serumProgramId: P
   const {error, response} = await getSerumMarketByAddress(market.address.toString())
   if (error) return;
   const { data } = await response.json()
-
-  if (data.serum_markets.length) {
-    const indexedMarket = data.serum_markets[0] as IndexedSerumMarket
-    let events: Event[] = [];
-
-    // Update the Serum market with the latest seq number
-    const header = EVENT_QUEUE_LAYOUT.HEADER.decode(accountInfo.data);
-    upsertSerumMarket({...indexedMarket, last_event_seq_num: header.seqNum})
-
-    if (indexedMarket.last_event_seq_num) {
-      events = decodeEventsSince(accountInfo.data, indexedMarket.last_event_seq_num)
-    } else {
-      events = decodeEventQueue(accountInfo.data)
+  let indexedMarket: IndexedSerumMarket = undefined;
+  if (!data.serum_markets.length) {
+    // Add the serum market if it does not exist
+    indexedMarket = {
+      address: market.address.toString(),
+      program_id: serumProgramId.toString(),
+      base_mint_address: market.baseMintAddress.toString(),
+      quote_mint_address: market.quoteMintAddress.toString(),
+      // @ts-ignore: Serum decoded
+      request_queue_address: market?._decoded?.requestQueue?.toString(),
+      // @ts-ignore: Serum decoded
+      event_queue_address: market?._decoded?.eventQueue?.toString(),
+      // @ts-ignore: Serum decoded
+      bids_address: market?._decoded?.bids?.toString(),
+      // @ts-ignore: Serum decoded
+      asks_address: market?._decoded?.asks?.toString(),
     }
-    // map the events to better structure
-    const formattedEvents: EventTypes[] = []
-    const fillsForTradeMatching: Record<string, Fill> = {}
-    events.forEach(event => {
-      const formattedEvent = _mapEventToDataMessage(event, market, timestamp, context.slot)
-      if (formattedEvent) {
-        formattedEvents.push(formattedEvent)
-        /**
-         * Below we capture a Trade event by matching opposite Fill events. This logic
-         * expects that the both Fill events for a trade will be decoded during the same
-         * iteration of reading the event queue. Basically this makes the assumption that
-         * corresponding Fill events will always occur during in the same block.
-         */
-        if (formattedEvent.type === 'fill') {
-          const key = `${formattedEvent.serumMarketAddress}|${formattedEvent.price}|${formattedEvent.size}|${formattedEvent.side}|${formattedEvent.maker}`
-          fillsForTradeMatching[key] = formattedEvent
+    upsertSerumMarket(indexedMarket)
+  } else {
+    indexedMarket = data.serum_markets[0] as IndexedSerumMarket
+  }
+  let events: Event[] = [];
 
-          const oppositeKey = `${formattedEvent.serumMarketAddress}|${formattedEvent.price}|${formattedEvent.size}|${formattedEvent.side === 'buy' ? 'sell' : 'buy'}|${!formattedEvent.maker}`
-          const marketFillOrder = fillsForTradeMatching[oppositeKey]
+  // Update the Serum market with the latest seq number
+  const header = EVENT_QUEUE_LAYOUT.HEADER.decode(accountInfo.data);
+  upsertSerumMarket({...indexedMarket, last_event_seq_num: header.seqNum})
 
-          if (marketFillOrder) {
-            // get the maker opposite fill order id
-            const makerFillOrderId = marketFillOrder.orderId
-            const tradeId = `${formattedEvent.orderId}|${makerFillOrderId}`
-            const tradeEvent: Trade = {
-              type: 'trade',
-              serumMarketAddress: formattedEvent.serumMarketAddress,
-              timestamp,
-              slot: formattedEvent.slot,
-              id: tradeId,
-              side: formattedEvent.side,
-              price: formattedEvent.price,
-              size: formattedEvent.size
-            }
-            formattedEvents.push(tradeEvent)
+  if (indexedMarket.last_event_seq_num) {
+    events = decodeEventsSince(accountInfo.data, indexedMarket.last_event_seq_num)
+  } else {
+    events = decodeEventQueue(accountInfo.data)
+  }
+  // map the events to better structure
+  const formattedEvents: EventTypes[] = []
+  const fillsForTradeMatching: Record<string, Fill> = {}
+  events.forEach(event => {
+    const formattedEvent = _mapEventToDataMessage(event, market, timestamp, context.slot)
+    if (formattedEvent) {
+      formattedEvents.push(formattedEvent)
+      /**
+       * Below we capture a Trade event by matching opposite Fill events. This logic
+       * expects that the both Fill events for a trade will be decoded during the same
+       * iteration of reading the event queue. Basically this makes the assumption that
+       * corresponding Fill events will always occur during in the same block.
+       */
+      if (formattedEvent.type === 'fill') {
+        const key = `${formattedEvent.serumMarketAddress}|${formattedEvent.price}|${formattedEvent.size}|${formattedEvent.side}|${formattedEvent.maker}`
+        fillsForTradeMatching[key] = formattedEvent
+
+        const oppositeKey = `${formattedEvent.serumMarketAddress}|${formattedEvent.price}|${formattedEvent.size}|${formattedEvent.side === 'buy' ? 'sell' : 'buy'}|${!formattedEvent.maker}`
+        const marketFillOrder = fillsForTradeMatching[oppositeKey]
+
+        if (marketFillOrder) {
+          // get the maker opposite fill order id
+          const makerFillOrderId = marketFillOrder.orderId
+          const tradeId = `${formattedEvent.orderId}|${makerFillOrderId}`
+          const tradeEvent: Trade = {
+            type: 'trade',
+            serumMarketAddress: formattedEvent.serumMarketAddress,
+            timestamp,
+            slot: formattedEvent.slot,
+            id: tradeId,
+            side: formattedEvent.side,
+            price: formattedEvent.price,
+            size: formattedEvent.size
           }
+          formattedEvents.push(tradeEvent)
         }
       }
-      addOpenOrdersIfMissing(connection, serumProgramId, event.openOrders)
-    })
-    // Submit all events to the DB
-    if (formattedEvents.length) {
-      submitSerumEvents(formattedEvents)
     }
+    addOpenOrdersIfMissing(connection, serumProgramId, event.openOrders)
+  })
+  // Submit all events to the DB
+  if (formattedEvents.length) {
+    submitSerumEvents(formattedEvents)
   }
 }
 
@@ -196,8 +214,9 @@ export const subscribeToPackagedSerumMarkets = async (connection: Connection, cl
   // batch get the Serum market data
   const markets = await batchSerumMarkets(connection, serumMarketKeys)
 
-  markets.forEach(async market => {
-    console.log('**** subscribing to market ', market.address.toString())
+  const starterPromise = Promise.resolve(null)
+  await markets.reduce(async (accumulator, market) => {
+    await accumulator;
     // subscribe to the serum event queue
     connection.onAccountChange(
       // @ts-ignore: serum decoded
@@ -208,6 +227,7 @@ export const subscribeToPackagedSerumMarkets = async (connection: Connection, cl
     // @ts-ignore: serum decoded
     const accountInfo = await connection.getAccountInfo(market._decoded.eventQueue)
     await handleEventQueueChange(connection, market.programId, market)(accountInfo, {slot: null})
-  })
+    return wait(1_000)
+  }, starterPromise)
   
 }
