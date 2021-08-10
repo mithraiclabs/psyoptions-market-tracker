@@ -175,9 +175,19 @@ Resources:
                   - 'logs:DeleteLogGroup'
                   - 'logs:PutRetentionPolicy'
                   - 'route53:*'
-                  - 'secretsmanager:GetRandomPassword'
-                  - 'secretsmanager:DeleteSecret'
                   - 'servicediscovery:*'
+                Resource: '*'
+        - PolicyName:
+            !Join [
+              '-',
+              [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'secrets'],
+            ]
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'secretsmanager:*'
                 Resource: '*'
 
   # Create the Hasura BuildProject with required Build information
