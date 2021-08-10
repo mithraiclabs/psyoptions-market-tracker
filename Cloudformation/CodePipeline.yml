@@ -176,8 +176,7 @@ Resources:
                   - 'logs:PutRetentionPolicy'
                   - 'route53:*'
                   - 'servicediscovery:*'
-                  - secretsmanager:DeleteSecret
-                  - secretsmanager:GetRandomPassword
+                  - 'secretsmanager:*'
                 Resource: '*'
 
   # Create the Hasura BuildProject with required Build information

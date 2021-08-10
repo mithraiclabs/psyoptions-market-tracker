@@ -324,7 +324,7 @@ Resources:
               Value: "*"
               # TODO replace with secrets / parameters
             - Name: HASURA_GRAPHQL_DATABASE_URL
-              Value: !Join ['', ['postgres://tracker:password@', !GetAtt TimescaleEC2Instance.PrivateIp , ':5432', '/serum_markets']] 
+              Value: !Join ['', ['postgres://', !Sub "{{resolve:secretsmanager:${TimescaleSecret}::username}}" ,':', !Sub "{{resolve:secretsmanager:${TimescaleSecret}::password}}" ,'@', !GetAtt TimescaleEC2Instance.PrivateIp , ':5432', '/serum_markets']] 
             - Name: HASURA_GRAPHQL_DEV_MODE
               Value: true
             - Name: HASURA_GRAPHQL_LOG_LEVEL
