@@ -337,7 +337,7 @@ Resources:
                     "SolanaCluster": "devnet",
                     "CloudFormationExecutionRoleArn": ${CloudFormationExecutionRoleArn}
                   }'
-                  - { CloudFormationExecutionRoleArn: !Ref CloudformationExecutionRole }
+                  - { CloudFormationExecutionRoleArn: !GetAtt CloudformationExecutionRole.Arn }
                 RoleArn:
                   Fn::GetAtt: [CloudformationExecutionRole, Arn]
                 StackName:
@@ -440,9 +440,10 @@ Resources:
                     "HasuraDomainCertificateArn": "${HasuraDomainCertificateArn}",
                     "Ec2KeyNameParam": "${Ec2KeyNameParam}",
                     "SolanaRpcUrl": "https://api.mainnet-beta.solana.com",
-                    "SolanaCluster": "mainnet"
+                    "SolanaCluster": "mainnet",
+                    "CloudFormationExecutionRoleArn": ${CloudFormationExecutionRoleArn}
                   }'
-                  - { CloudFormationExecutionRoleArn: !Ref CloudformationExecutionRole }
+                  - { CloudFormationExecutionRoleArn: !GetAtt CloudformationExecutionRole.Arn }
                 RoleArn:
                   Fn::GetAtt: [CloudformationExecutionRole, Arn]
                 StackName:
