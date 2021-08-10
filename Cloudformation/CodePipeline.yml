@@ -177,18 +177,6 @@ Resources:
                   - 'route53:*'
                   - 'servicediscovery:*'
                 Resource: '*'
-        - PolicyName:
-            !Join [
-              '-',
-              [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'secrets'],
-            ]
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - 'secretsmanager:*'
-                Resource: '*'
 
   # Create the Hasura BuildProject with required Build information
   HasuraBuildProject:
@@ -336,8 +324,8 @@ Resources:
                 ActionMode: CREATE_UPDATE
                 Capabilities: CAPABILITY_NAMED_IAM
                 # Pass parameter values to All-The-Machines.yml for deployment
-                ParameterOverrides: !Sub |
-                  {
+                ParameterOverrides: !Sub 
+                  - '{
                     "HasuraImageURI" : { "Fn::GetParam" : ["hasura-output-artifacts", "imagedefinitions.json", "ImageURI"] },
                     "ListenerImageURI" : { "Fn::GetParam" : ["listener-output-artifacts", "imagedefinitions.json", "ImageURI"] },
                     "ResourcePrefix":  "s-${ResourcePrefix}",
@@ -346,8 +334,10 @@ Resources:
                     "HasuraDomainCertificateArn": "${HasuraDomainCertificateArn}",
                     "Ec2KeyNameParam": "${Ec2KeyNameParam}",
                     "SolanaRpcUrl": "https://api.devnet.solana.com",
-                    "SolanaCluster": "devnet"
-                  }
+                    "SolanaCluster": "devnet",
+                    "CloudFormationExecutionRoleArn": ${CloudFormationExecutionRoleArn}
+                  }'
+                  - { CloudFormationExecutionRoleArn: !Ref CloudformationExecutionRole }
                 RoleArn:
                   Fn::GetAtt: [CloudformationExecutionRole, Arn]
                 StackName:
@@ -440,8 +430,8 @@ Resources:
                 ActionMode: CREATE_UPDATE
                 Capabilities: CAPABILITY_NAMED_IAM
                 # Pass parameter values to All-The-Machines.yml for deployment
-                ParameterOverrides: !Sub |
-                  {
+                ParameterOverrides: !Sub
+                  - '{
                     "HasuraImageURI" : { "Fn::GetParam" : ["hasura-output-artifacts", "imagedefinitions.json", "ImageURI"] },
                     "ListenerImageURI" : { "Fn::GetParam" : ["listener-output-artifacts", "imagedefinitions.json", "ImageURI"] },
                     "ResourcePrefix":  "${ResourcePrefix}",
@@ -451,7 +441,8 @@ Resources:
                     "Ec2KeyNameParam": "${Ec2KeyNameParam}",
                     "SolanaRpcUrl": "https://api.mainnet-beta.solana.com",
                     "SolanaCluster": "mainnet"
-                  }
+                  }'
+                  - { CloudFormationExecutionRoleArn: !Ref CloudformationExecutionRole }
                 RoleArn:
                   Fn::GetAtt: [CloudformationExecutionRole, Arn]
                 StackName:
