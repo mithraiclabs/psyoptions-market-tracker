@@ -176,6 +176,7 @@ Resources:
                   - 'logs:PutRetentionPolicy'
                   - 'route53:*'
                   - 'secretsmanager:GetRandomPassword'
+                  - 'secretsmanager:DeleteSecret'
                   - 'servicediscovery:*'
                 Resource: '*'
 
