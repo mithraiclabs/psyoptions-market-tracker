@@ -39,8 +39,6 @@ Parameters:
     Type: String
     AllowedValues: ["devnet", "mainnet", "testnet"]
     Default: devnet
-  CloudFormationExecutionRoleArn:
-    Type: String
 
 Mappings: 
   RegionMap:
@@ -251,22 +249,6 @@ Resources:
       - Key: Resource
         Value: TimescaleDB
 
-  TimescaleSecretResourcePolicy:
-    Type: AWS::SecretsManager::ResourcePolicy
-    Properties:
-      BlockPublicPolicy: True
-      SecretId: !Ref TimescaleSecret
-      ResourcePolicy:
-        Version: '2012-10-17'
-        Statement:
-        - Resource: "*"
-          Action:
-            - secretsmanager:DeleteSecret
-            - secretsmanager:GetRandomPassword
-          Effect: Deny
-          Principal:
-            AWS: !Ref CloudFormationExecutionRoleArn
-
   # Create the Hasura TaskDefinition with container details
   TimescaleTaskDefinition:
     Type: AWS::ECS::TaskDefinition
@@ -317,22 +299,6 @@ Resources:
         Value: !Ref SolanaCluster
       - Key: Resource
         Value: Hasura
-
-  HasuraSecretResourcePolicy:
-    Type: AWS::SecretsManager::ResourcePolicy
-    Properties:
-      BlockPublicPolicy: True
-      SecretId: !Ref HasuraAdminSecret
-      ResourcePolicy:
-        Version: '2012-10-17'
-        Statement:
-        - Resource: "*"
-          Action:
-            - secretsmanager:DeleteSecret
-            - secretsmanager:GetRandomPassword
-          Effect: Deny
-          Principal:
-            AWS: !Ref CloudFormationExecutionRoleArn
 
   # Create the Hasura TaskDefinition with container details
   HasuraTaskDefinition:

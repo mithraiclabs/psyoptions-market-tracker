@@ -176,6 +176,8 @@ Resources:
                   - 'logs:PutRetentionPolicy'
                   - 'route53:*'
                   - 'servicediscovery:*'
+                  - secretsmanager:DeleteSecret
+                  - secretsmanager:GetRandomPassword
                 Resource: '*'
 
   # Create the Hasura BuildProject with required Build information
@@ -334,8 +336,7 @@ Resources:
                     "HasuraDomainCertificateArn": "${HasuraDomainCertificateArn}",
                     "Ec2KeyNameParam": "${Ec2KeyNameParam}",
                     "SolanaRpcUrl": "https://api.devnet.solana.com",
-                    "SolanaCluster": "devnet",
-                    "CloudFormationExecutionRoleArn": { "Fn::GetAtt": ["CloudformationExecutionRole", "Arn"] }
+                    "SolanaCluster": "devnet"
                   }
                 RoleArn:
                   Fn::GetAtt: [CloudformationExecutionRole, Arn]
@@ -439,8 +440,7 @@ Resources:
                     "HasuraDomainCertificateArn": "${HasuraDomainCertificateArn}",
                     "Ec2KeyNameParam": "${Ec2KeyNameParam}",
                     "SolanaRpcUrl": "https://api.mainnet-beta.solana.com",
-                    "SolanaCluster": "mainnet",
-                    "CloudFormationExecutionRoleArn": { "Fn::GetAtt": ["CloudformationExecutionRole", "Arn"] }
+                    "SolanaCluster": "mainnet"
                   }
                 RoleArn:
                   Fn::GetAtt: [CloudformationExecutionRole, Arn]
