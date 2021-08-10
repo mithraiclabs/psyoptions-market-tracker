@@ -234,7 +234,7 @@ Resources:
           ]
 
   # Timescale username and password secret
-  TimescaleRotationSecret:
+  TimescaleSecret:
     Type: AWS::SecretsManager::Secret
     Properties:
       Description: Secret for the Timescale DB
@@ -269,9 +269,11 @@ Resources:
             - Name: POSTGRES_DB
               Value: serum_markets
             - Name: POSTGRES_PASSWORD
-              Value: Fn::Sub: "{{resolve:secretsmanager:${TimescaleRotationSecret}::password}}"
+              Value: !Sub 
+                - "{{resolve:secretsmanager:${TimescaleSecret}::password}}"
             - Name: POSTGRES_USER
-              Value: Fn::Sub: "{{resolve:secretsmanager:${TimescaleRotationSecret}::username}}"
+              Value: !Sub 
+                - "{{resolve:secretsmanager:${TimescaleSecret}::username}}"
           PortMappings:
             - ContainerPort: !Ref TimescaleContainerPort
               HostPort: !Ref TimescaleContainerPort
@@ -338,7 +340,8 @@ Resources:
             - Name: HASURA_GRAPHQL_MIGRATIONS_DIR
               Value: /hasura-migrations
             - Name: HASURA_GRAPHQL_ADMIN_SECRET
-              Value: Fn::Sub: "{{resolve:secretsmanager:${HasuraAdminSecret}::secret}}"
+              Value: !Sub
+                - "{{resolve:secretsmanager:${HasuraAdminSecret}::secret}}"
             - Name: HASURA_GRAPHQL_UNAUTHORIZED_ROLE
               Value: anonymous
           PortMappings:
@@ -516,7 +519,8 @@ Resources:
             - Name: SOLANA_CLUSTER
               Value: !Ref SolanaCluster
             - Name: HASURA_GRAPHQL_ADMIN_SECRET
-              Value: Fn::Sub: "{{resolve:secretsmanager:${HasuraAdminSecret}::secret}}"
+              Value: !Sub
+                - "{{resolve:secretsmanager:${HasuraAdminSecret}::secret}}"
           LogConfiguration:
             LogDriver: awslogs
             Options:
