@@ -27,14 +27,7 @@ const createSubscriptionObservable = (wsurl, query, variables) => {
 export const waitUntilServerUp = async () => {
   while(true) {
     try {
-      const response = await fetch(String(process.env["GRAPHQL_URL"]), {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({query: {}}),
-      });
+      const {response} = await makeRequest({body: {query: {}}})
       if (response.status === 200) {
         break
       }
@@ -58,6 +51,8 @@ export const makeRequest = async ({body}: {body: object}): Promise<{
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
+        "X-Hasura-Admin-Secret": process.env["HASURA_GRAPHQL_ADMIN_SECRET"],
+        "X-Hasura-Role": "admin",
       },
       body: JSON.stringify(body),
     });

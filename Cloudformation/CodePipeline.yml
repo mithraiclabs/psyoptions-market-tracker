@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: The CloudFormation template for the CodePipeline.
+Description: Market tracker CloudFormation which creates 2 CodePipelines for devnet and mainnet
 
 Parameters:
   ResourcePrefix:
@@ -32,11 +32,6 @@ Parameters:
   Ec2KeyNameParam:
     Description: The name of the EC2 keypair that is default added to instances
     Type: String
-  SolanaCluster:
-    Description: The Solana cluster to listen to
-    Type: String
-    AllowedValues: ["devnet", "mainnet", "testnet"]
-    Default: devnet
 
 Resources:
   # Create an ECR Repository to store docker images
@@ -181,6 +176,7 @@ Resources:
                   - 'logs:PutRetentionPolicy'
                   - 'route53:*'
                   - 'servicediscovery:*'
+                  - 'secretsmanager:*'
                 Resource: '*'
 
   # Create the Hasura BuildProject with required Build information
@@ -249,14 +245,14 @@ Resources:
         BuildSpec: buildspec.yml
 
   # Create CodePipeline with 3 stages (Source, Build and Deploy)
-  CodePipeLine:
+  DevnetCodePipeLine:
     Type: AWS::CodePipeline::Pipeline
     DependsOn: S3Bucket
     Properties:
       ArtifactStore:
         Location: !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 's3bucket']]
         Type: S3
-      Name: !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'CodePipeLine']]
+      Name: !Join ['-', ['s', !Ref ResourcePrefix, !Ref 'AWS::AccountId', 'CodePipeLine']]
       RestartExecutionOnUpdate: False
       RoleArn:
         Fn::GetAtt: [CodePipeLineExecutionRole, Arn]
@@ -329,17 +325,17 @@ Resources:
                 ActionMode: CREATE_UPDATE
                 Capabilities: CAPABILITY_NAMED_IAM
                 # Pass parameter values to All-The-Machines.yml for deployment
-                ParameterOverrides: !Sub |
+                ParameterOverrides: !Sub | 
                   {
                     "HasuraImageURI" : { "Fn::GetParam" : ["hasura-output-artifacts", "imagedefinitions.json", "ImageURI"] },
                     "ListenerImageURI" : { "Fn::GetParam" : ["listener-output-artifacts", "imagedefinitions.json", "ImageURI"] },
                     "ResourcePrefix":  "s-${ResourcePrefix}",
                     "HostedZoneId": "${HostedZoneId}",
-                    "HasuraDomainName": "staging-${HasuraDomainName}",
+                    "HasuraDomainName": "devnet-${HasuraDomainName}",
                     "HasuraDomainCertificateArn": "${HasuraDomainCertificateArn}",
                     "Ec2KeyNameParam": "${Ec2KeyNameParam}",
                     "SolanaRpcUrl": "https://api.devnet.solana.com",
-                    "SolanaCluster": "${SolanaCluster}"
+                    "SolanaCluster": "devnet"
                   }
                 RoleArn:
                   Fn::GetAtt: [CloudformationExecutionRole, Arn]
@@ -350,27 +346,71 @@ Resources:
                   ]
                 TemplatePath: source-output-artifacts::Cloudformation/All-The-Machines.yml
               RunOrder: 1
-            - Name: Approval
+
+  # Create CodePipeline with 3 stages (Source, Build and Deploy)
+  MainnetCodePipeline:
+    Type: AWS::CodePipeline::Pipeline
+    DependsOn: S3Bucket
+    Properties:
+      ArtifactStore:
+        Location: !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 's3bucket']]
+        Type: S3
+      Name: !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'CodePipeLine']]
+      RestartExecutionOnUpdate: False
+      RoleArn:
+        Fn::GetAtt: [CodePipeLineExecutionRole, Arn]
+
+      Stages:
+        # Download source code from Github Repo to source-output-artifacts path in S3 Bucket
+        - Name: Source
+          Actions:
+            - Name: SourceAction
               ActionTypeId:
-                Category: Approval
+                Category: Source
                 Owner: AWS
                 Version: 1
-                Provider: Manual
-              RunOrder: 2
-            - Name: DeleteTestStack
-              ActionTypeId:
-                Category: Deploy
-                Owner: AWS
-                Provider: CloudFormation
-                Version: '1'
+                Provider: CodeStarSourceConnection
+              OutputArtifacts:
+                - Name: source-output-artifacts
               Configuration:
-                ActionMode: DELETE_ONLY
-                RoleArn: !GetAtt CloudformationExecutionRole.Arn
-                StackName: !Join [
-                    '-',
-                    ['s', !Ref ResourcePrefix, !Ref 'AWS::AccountId', 'ECSCluster'],
-                  ]
-              RunOrder: 3
+                ConnectionArn: !Ref CodeStarGithubConnectionArn
+                FullRepositoryId: !Ref FullRepositoryId
+                BranchName: !Ref GithubBranch
+                DetectChanges: true
+                OutputArtifactFormat: 'CODE_ZIP'
+                DetectChanges: false
+              Region: !Ref AwsRegion
+              RunOrder: 1
+
+        # Build the project using the BuildProject and Output build artifacts to build-output-artifacts path in S3 Bucket
+        - Name: Build
+          Actions:
+            - Name: HasuraBuild
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              OutputArtifacts:
+                - Name: hasura-output-artifacts
+              InputArtifacts:
+                - Name: source-output-artifacts
+              Configuration:
+                ProjectName: !Ref HasuraBuildProject
+              RunOrder: 1
+            - Name: ListenerBuild
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              OutputArtifacts:
+                - Name: listener-output-artifacts
+              InputArtifacts:
+                - Name: source-output-artifacts
+              Configuration:
+                ProjectName: !Ref ListenerBuildProject
+              RunOrder: 1
 
         # Deploy the project to Productionby executing All-The-Machines.yml file in the Source code with Cloudformation.
         - Name: ProductionDeploy
@@ -398,8 +438,8 @@ Resources:
                     "HasuraDomainName": "${HasuraDomainName}",
                     "HasuraDomainCertificateArn": "${HasuraDomainCertificateArn}",
                     "Ec2KeyNameParam": "${Ec2KeyNameParam}",
-                    "SolanaRpcUrl": "https://api.devnet.solana.com",
-                    "SolanaCluster": "${SolanaCluster}"
+                    "SolanaRpcUrl": "https://api.mainnet-beta.solana.com",
+                    "SolanaCluster": "mainnet"
                   }
                 RoleArn:
                   Fn::GetAtt: [CloudformationExecutionRole, Arn]

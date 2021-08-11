@@ -233,6 +233,22 @@ Resources:
             ]
           ]
 
+  # Timescale username and password secret
+  TimescaleSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: Secret for the Timescale DB
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "tracker"}'
+        GenerateStringKey: password
+        PasswordLength: 16
+        ExcludeCharacters: "\"@/\\"
+      Tags:
+      - Key: SolanaCluster
+        Value: !Ref SolanaCluster
+      - Key: Resource
+        Value: TimescaleDB
+
   # Create the Hasura TaskDefinition with container details
   TimescaleTaskDefinition:
     Type: AWS::ECS::TaskDefinition
@@ -253,9 +269,9 @@ Resources:
             - Name: POSTGRES_DB
               Value: serum_markets
             - Name: POSTGRES_PASSWORD
-              Value: password
+              Value: !Sub "{{resolve:secretsmanager:${TimescaleSecret}::password}}"
             - Name: POSTGRES_USER
-              Value: tracker
+              Value: !Sub "{{resolve:secretsmanager:${TimescaleSecret}::username}}"
           PortMappings:
             - ContainerPort: !Ref TimescaleContainerPort
               HostPort: !Ref TimescaleContainerPort
@@ -267,6 +283,22 @@ Resources:
               awslogs-group:
                 !Join ['-', [!Ref ResourcePrefix, !Ref 'AWS::AccountId', 'Container']]
               awslogs-stream-prefix: 'Timescale'
+
+  # Hasura admin secret
+  HasuraAdminSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: Secret for Hasura admin
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "admin"}'
+        GenerateStringKey: secret
+        PasswordLength: 16
+        ExcludeCharacters: "\"@/\\"
+      Tags:
+      - Key: SolanaCluster
+        Value: !Ref SolanaCluster
+      - Key: Resource
+        Value: Hasura
 
   # Create the Hasura TaskDefinition with container details
   HasuraTaskDefinition:
@@ -292,7 +324,7 @@ Resources:
               Value: "*"
               # TODO replace with secrets / parameters
             - Name: HASURA_GRAPHQL_DATABASE_URL
-              Value: !Join ['', ['postgres://tracker:password@', !GetAtt TimescaleEC2Instance.PrivateIp , ':5432', '/serum_markets']] 
+              Value: !Join ['', ['postgres://', !Sub "{{resolve:secretsmanager:${TimescaleSecret}::username}}" ,':', !Sub "{{resolve:secretsmanager:${TimescaleSecret}::password}}" ,'@', !GetAtt TimescaleEC2Instance.PrivateIp , ':5432', '/serum_markets']] 
             - Name: HASURA_GRAPHQL_DEV_MODE
               Value: true
             - Name: HASURA_GRAPHQL_LOG_LEVEL
@@ -305,6 +337,10 @@ Resources:
               Value: /hasura-metadata
             - Name: HASURA_GRAPHQL_MIGRATIONS_DIR
               Value: /hasura-migrations
+            - Name: HASURA_GRAPHQL_ADMIN_SECRET
+              Value: !Sub "{{resolve:secretsmanager:${HasuraAdminSecret}::secret}}"
+            - Name: HASURA_GRAPHQL_UNAUTHORIZED_ROLE
+              Value: anonymous
           PortMappings:
             - ContainerPort: !Ref HasuraContainerPort
               HostPort: !Ref HasuraContainerPort
@@ -477,6 +513,10 @@ Resources:
               Value: trades, level1, level2, level3
             - Name: RPC_URL
               Value: !Ref SolanaRpcUrl
+            - Name: SOLANA_CLUSTER
+              Value: !Ref SolanaCluster
+            - Name: HASURA_GRAPHQL_ADMIN_SECRET
+              Value: !Sub "{{resolve:secretsmanager:${HasuraAdminSecret}::secret}}"
           LogConfiguration:
             LogDriver: awslogs
             Options:
