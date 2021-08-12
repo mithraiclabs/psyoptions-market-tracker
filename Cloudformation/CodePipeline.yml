@@ -5,11 +5,11 @@ Parameters:
   ResourcePrefix:
     Description: Name used to prefix most resources
     Type: String
-    Default: psyoptions-tracker
+    Default: tracker
     AllowedPattern : "[a-z\\-]*"
   GithubBranch:
     Type: String
-    Default: <BRANCH>
+    Default: main
   CodeStarGithubConnectionArn:
     Type: String
   FullRepositoryId:
@@ -18,22 +18,34 @@ Parameters:
     Default: mithraiclabs/psyoptions-market-tracker
   AwsRegion:
     Type: String
-    Default: us-east-1
+    Default: eu-central-1
   HostedZoneId:
     Description: The ID of the Hosted zone where the DNS record sets should be created
     Type: String
   HasuraDomainName:
     Description: The fully qualified domain name the Hasura DNS record sets belong to
     Type: String
-    Default: www.example.com
-  HasuraDomainCertificateArn:
-    Description: The ARN of the SSL/TLS certificate to use for the secure the Hasura load balancer listener
-    Type: String
+    Default: api.psyoptions.io
   Ec2KeyNameParam:
     Description: The name of the EC2 keypair that is default added to instances
     Type: String
+  CertificateDomain:
+    Description: The fully qualified domain name to create a certificate for
+    Type: String
+    Default: '*.psyoptions.io'
 
 Resources:
+
+  # create a domain name cert
+  DomainCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties: 
+      DomainName: !Ref CertificateDomain
+      DomainValidationOptions:
+        - DomainName: !Ref CertificateDomain
+          HostedZoneId: !Ref HostedZoneId
+      ValidationMethod: DNS
+
   # Create an ECR Repository to store docker images
   HasuraECRRepository:
     Type: AWS::ECR::Repository
@@ -332,7 +344,7 @@ Resources:
                     "ResourcePrefix":  "s-${ResourcePrefix}",
                     "HostedZoneId": "${HostedZoneId}",
                     "HasuraDomainName": "devnet-${HasuraDomainName}",
-                    "HasuraDomainCertificateArn": "${HasuraDomainCertificateArn}",
+                    "HasuraDomainCertificateArn": "${DomainCertificate}",
                     "Ec2KeyNameParam": "${Ec2KeyNameParam}",
                     "SolanaRpcUrl": "https://api.devnet.solana.com",
                     "SolanaCluster": "devnet"
@@ -436,7 +448,7 @@ Resources:
                     "ResourcePrefix":  "${ResourcePrefix}",
                     "HostedZoneId": "${HostedZoneId}",
                     "HasuraDomainName": "${HasuraDomainName}",
-                    "HasuraDomainCertificateArn": "${HasuraDomainCertificateArn}",
+                    "HasuraDomainCertificateArn": "${DomainCertificate}",
                     "Ec2KeyNameParam": "${Ec2KeyNameParam}",
                     "SolanaRpcUrl": "https://api.mainnet-beta.solana.com",
                     "SolanaCluster": "mainnet"
