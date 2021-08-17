@@ -33,6 +33,14 @@ Parameters:
     Description: The fully qualified domain name to create a certificate for
     Type: String
     Default: '*.psyoptions.io'
+  DevnetRPCUrl:
+    Description: The URL for a Devnet RPC cluster
+    Type: String
+    Default: 'https://api.devnet.solana.com'
+  MainnetRPCUrl:
+    Description: The URL for a Mainnet RPC cluster
+    Type: String
+    Default: 'https://api.mainnet-beta.solana.com'
 
 Resources:
 
@@ -346,7 +354,7 @@ Resources:
                     "HasuraDomainName": "devnet-${HasuraDomainName}",
                     "HasuraDomainCertificateArn": "${DomainCertificate}",
                     "Ec2KeyNameParam": "${Ec2KeyNameParam}",
-                    "SolanaRpcUrl": "https://api.devnet.solana.com",
+                    "SolanaRpcUrl": "${DevnetRPCUrl}",
                     "SolanaCluster": "devnet"
                   }
                 RoleArn:
@@ -450,7 +458,7 @@ Resources:
                     "HasuraDomainName": "${HasuraDomainName}",
                     "HasuraDomainCertificateArn": "${DomainCertificate}",
                     "Ec2KeyNameParam": "${Ec2KeyNameParam}",
-                    "SolanaRpcUrl": "https://api.mainnet-beta.solana.com",
+                    "SolanaRpcUrl": "${MainnetRPCUrl}",
                     "SolanaCluster": "mainnet"
                   }
                 RoleArn:

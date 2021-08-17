@@ -39,10 +39,10 @@
   dependencies:
     regenerator-runtime "^0.13.4"
 
-"@mithraic-labs/market-meta@^0.0.3":
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/@mithraic-labs/market-meta/-/market-meta-0.0.3.tgz#a0ca285b904b36459e83b10a368f4c3fcaa7b8a1"
-  integrity sha512-dS/l2wD/GUvnKDU83lXvr3mBgTqy/f2Z1/YaBM1StPTMexOz5RTFwOtcb8+LFMn8/AM3U8Ng6o9+5MDuGKLnVQ==
+"@mithraic-labs/market-meta@^0.0.8":
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/@mithraic-labs/market-meta/-/market-meta-0.0.8.tgz#c1bc5354c719c094fbac73dbe072505cfc17c214"
+  integrity sha512-ghXSAgT599peI1BNSxPAkMWvUIooj5KQUHkLygJ3Pu8NhIEpszayyYeI/XSqHb5YYa8bMY9QwAecpOHcdstGig==
 
 "@mithraic-labs/psyoptions@^0.5.2":
   version "0.5.2"
