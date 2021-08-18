@@ -227,6 +227,8 @@ export const subscribeToPackagedSerumMarkets = async (connection: Connection, cl
   const starterPromise = Promise.resolve(null)
   await markets.reduce(async (accumulator, market) => {
     await accumulator;
+
+    console.log(`Subscribing to market: ${market.address.toString()}`)
     // subscribe to the serum event queue
     connection.onAccountChange(
       // @ts-ignore: serum decoded
