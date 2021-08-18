@@ -5,7 +5,10 @@ import { MarketMeta } from "@mithraic-labs/market-meta"
 import { ClusterEnv } from "@mithraic-labs/market-meta/dist/types";
 import * as fs from 'fs'
 
-const connection = new Connection(process.env['RPC_URL']);
+const connection = new Connection(process.env['RPC_URL'], {
+  commitment: 'confirmed',
+  wsEndpoint: process.env['WS_ENDPOINT'],
+});
 const solanaCluster = process.env['SOLANA_CLUSTER'];
 
 

@@ -37,10 +37,16 @@ Parameters:
     Description: The URL for a Devnet RPC cluster
     Type: String
     Default: 'https://api.devnet.solana.com'
+  DevnetWsEndpoint:
+    Description: The URL for a Devnet RPC Websocket endpoint
+    Type: String
   MainnetRPCUrl:
     Description: The URL for a Mainnet RPC cluster
     Type: String
     Default: 'https://api.mainnet-beta.solana.com'
+  MainnetWsEndpoint:
+    Description: The URL for a Mainnet RPC Websocket endpoint
+    Type: String
 
 Resources:
 
@@ -355,6 +361,7 @@ Resources:
                     "HasuraDomainCertificateArn": "${DomainCertificate}",
                     "Ec2KeyNameParam": "${Ec2KeyNameParam}",
                     "SolanaRpcUrl": "${DevnetRPCUrl}",
+                    "SolanaWsEndpoint": "${DevnetWsEndpoint}",
                     "SolanaCluster": "devnet"
                   }
                 RoleArn:
@@ -459,6 +466,7 @@ Resources:
                     "HasuraDomainCertificateArn": "${DomainCertificate}",
                     "Ec2KeyNameParam": "${Ec2KeyNameParam}",
                     "SolanaRpcUrl": "${MainnetRPCUrl}",
+                    "SolanaWsEndpoint": "${MainnetWsEndpoint}",
                     "SolanaCluster": "mainnet"
                   }
                 RoleArn:

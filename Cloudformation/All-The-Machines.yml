@@ -39,6 +39,9 @@ Parameters:
     Type: String
     AllowedValues: ["devnet", "mainnet", "testnet"]
     Default: devnet
+  SolanaWsEndpoint:
+    Description: The URL for a Solana RPC Websocket endpoint
+    Type: String
 
 Mappings: 
   RegionMap:
@@ -265,7 +268,6 @@ Resources:
           Environment:
             - Name: PORT
               Value: !Ref TimescaleContainerPort
-            # TODO replace with secrets / parameters
             - Name: POSTGRES_DB
               Value: serum_markets
             - Name: POSTGRES_PASSWORD
@@ -513,6 +515,8 @@ Resources:
               Value: trades, level1, level2, level3
             - Name: RPC_URL
               Value: !Ref SolanaRpcUrl
+            - Name: WS_ENDPOINT
+              Value: !Ref SolanaWsEndpoint
             - Name: SOLANA_CLUSTER
               Value: !Ref SolanaCluster
             - Name: HASURA_GRAPHQL_ADMIN_SECRET
