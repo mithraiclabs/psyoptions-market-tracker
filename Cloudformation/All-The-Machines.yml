@@ -330,7 +330,7 @@ Resources:
             - Name: HASURA_GRAPHQL_DEV_MODE
               Value: true
             - Name: HASURA_GRAPHQL_LOG_LEVEL
-              Value: debug
+              Value: info
             - Name: HASURA_GRAPHQL_ENABLE_CONSOLE
               Value: true
             - Name: HASURA_GRAPHQL_ENABLED_LOG_TYPES
