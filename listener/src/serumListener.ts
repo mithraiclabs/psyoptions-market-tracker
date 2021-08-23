@@ -9,6 +9,23 @@ import { ClusterEnv } from "@mithraic-labs/market-meta/dist/types";
 import { batchSerumMarkets } from "./helpers/serum";
 import { wait } from "./helpers/helpers";
 
+const getOpenOrderAccount = async (connection: Connection, address: PublicKey, serumProgramId: PublicKey, attempt = 0): Promise<OpenOrders|null> => {
+  try {
+    if (attempt >= 0) {
+      const delay = attempt**2 * 250;
+      await wait(delay)
+    }
+    return await OpenOrders.load(connection, address, serumProgramId)
+  } catch (error) {
+    console.log('Caught error in getOpenOrderAccount')
+    console.error(error)
+    if (attempt < 10) {
+      return getOpenOrderAccount(connection, address, serumProgramId, attempt + 1)
+    }
+    return null;
+  }
+}
+
 // Used to track with open order accounts are being fetched from the chain to avoid redundant
 // RPC requests. OpenOrders only need to be added once and then they will be associated to 
 // any order they've made.
@@ -17,14 +34,17 @@ const addOpenOrdersIfMissing = async (connection: Connection, serumProgramId: Pu
   const { error, response } = await findOpenOrderByAddress(openOrdersKey.toString())
   if (response) {
     const { data } = await response.json()
-    if (!data.open_order_accounts.length) {
+    if (!data?.open_order_accounts?.length) {
       if (openOrdersFetching[openOrdersKey.toString()]) {
         return 
       } else {
         openOrdersFetching[openOrdersKey.toString()] = true
+        
         // get the open order account info from the chain
-        const openOrders = await OpenOrders.load(connection, openOrdersKey, serumProgramId);
-        upsertOpenOrder(openOrders)
+        const openOrders = await getOpenOrderAccount(connection, openOrdersKey, serumProgramId)
+        if (openOrders) {
+          upsertOpenOrder(openOrders)
+        }
         delete openOrdersFetching[openOrdersKey.toString()]
       }
     }
