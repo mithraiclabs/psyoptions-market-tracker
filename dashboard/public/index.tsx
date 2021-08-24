@@ -15,7 +15,7 @@ const GRAPHQL_URL = import.meta.env.GRAPHQL_URL ?? "";
 
 const subscriptionClient = new SubscriptionClient(
   GRAPHQL_URL.replace("http", "ws"),
-  { reconnect: true }
+  { reconnect: true, inactivityTimeout: 30_000 }
 );
 
 const client = createClient({

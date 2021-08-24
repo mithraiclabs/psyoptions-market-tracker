@@ -4,17 +4,12 @@ import { formatMarketName } from "./shared";
 
 const EventsQuery = `
 subscription {
-  serum_events(order_by: {timestamp: desc}, limit: 20) {
-    market {
-      option_type
-      quote_asset {
-        symbol
-      }
-      underlying_asset {
-        symbol
-      }
-      underlying_asset_per_contract
-      quote_asset_per_contract
+  serum_events(order_by: {timestamp: desc}, limit: 100, where: {type: {_eq: trade}, serum_market_address: {_eq: "CHBtL1yfw24JxbCTQtrMZ1Tq5XsvfsqDCdi2QYdtVzvc"}}) {
+    serum_market {
+      address
+      base_mint_address
+      quote_mint_address
+      last_event_seq_num
     }
     price
     type
@@ -38,7 +33,7 @@ export default function Events() {
       <thead>
         <tr>
           <th>Time</th>
-          <th>Market</th>
+          <th>Serum Market</th>
           <th>Type</th>
           <th>Side</th>
           <th>Price</th>
@@ -52,7 +47,7 @@ export default function Events() {
               {formatDistanceToNow(new Date(event.timestamp + "Z"))} ago
             </td>
             <td>
-              <th>{formatMarketName(event.market)}</th>
+              <th>{event.serum_market.address}</th>
             </td>
             <td>{event.type}</td>
             <td>{event.side}</td>

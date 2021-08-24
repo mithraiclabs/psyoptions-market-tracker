@@ -2,53 +2,44 @@ import { useSubscription } from "urql";
 import Events from "./events";
 import { formatMarketName } from "./shared";
 
-const SerumVialEventsQuery = `
+const SerumMarketsQuery = `
 subscription {
-  markets {
-    option_type
-    quote_asset {
-      symbol
-    }
-    underlying_asset {
-      symbol
-    }
-    volume
+  serum_markets(order_by: {address: asc}) {
+    address
+    program_id
+    base_mint_address
+    quote_mint_address
     latest_price
     change(args: { duration: "24 hours", percentage: true })
-
-    underlying_asset_per_contract
-    quote_asset_per_contract
+    volume(args: { duration: "24 hours"})
   }
 }
 `;
 
 export default function Dashboard() {
   const [{ data, fetching, error }] = useSubscription<any>({
-    query: SerumVialEventsQuery,
+    query: SerumMarketsQuery,
   });
 
   if (fetching) return <p>Loading...</p>;
   if (error) return <p>Oh no... {error.message}</p>;
 
-  const types = sortMarkets(data.markets);
-
   return (
     <>
       <section>
-        {types.map((type: any) => (
           <table>
             <thead>
               <tr>
-                <th>{type[0].option_type} Size</th>
+                <th>Address</th>
                 <th>Latest Price</th>
                 <th>24hr Change</th>
-                <th>Volume</th>
+                <th>24hr Volume</th>
               </tr>
             </thead>
-            {type.map((market: any) => (
+            {data.serum_markets.map((market: any) => (
               <tbody>
                 <tr>
-                  <th>{formatMarketName(market)}</th>
+                  <th>{market.address}</th>
                   <td>{market.latest_price}</td>
                   <td>{formatChange(market.change)}</td>
                   <td>{num(market.volume)}</td>
@@ -56,7 +47,6 @@ export default function Dashboard() {
               </tbody>
             ))}
           </table>
-        ))}
       </section>
       <section>
         <Events />
