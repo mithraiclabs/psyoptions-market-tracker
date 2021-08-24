@@ -142,12 +142,6 @@
         column_mapping:
           address: serum_address
   computed_fields:
-  - name: volume
-    definition:
-      function:
-        schema: public
-        name: volume
-    comment: ""
   - name: latest_price
     definition:
       function:
@@ -158,7 +152,13 @@
     definition:
       function:
         schema: public
-        name: signed_change
+        name: change
+    comment: ""
+  - name: volume
+    definition:
+      function:
+        schema: public
+        name: volume
     comment: ""
   select_permissions:
   - role: anonymous
@@ -178,7 +178,6 @@
       - latest_price
       - volume
       filter: {}
-      allow_aggregations: true
 - table:
     schema: public
     name: serum_vial_event_types
