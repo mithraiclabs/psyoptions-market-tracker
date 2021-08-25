@@ -4,7 +4,7 @@ import { formatMarketName } from "./shared";
 
 const EventsQuery = `
 subscription {
-  serum_events(order_by: {timestamp: desc}, limit: 100, where: {type: {_eq: trade}, serum_market_address: {_eq: "CHBtL1yfw24JxbCTQtrMZ1Tq5XsvfsqDCdi2QYdtVzvc"}}) {
+  serum_events(order_by: {timestamp: desc}, limit: 100, where: {type: {_eq: trade}}) {
     serum_market {
       address
       base_mint_address
