@@ -92,6 +92,9 @@
       filter: {}
 - table:
     schema: public
+    name: owner_totals
+- table:
+    schema: public
     name: serum_events
   object_relationships:
   - name: open_order_account
