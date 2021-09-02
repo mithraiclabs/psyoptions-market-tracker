@@ -16,9 +16,24 @@ subscription {
 }
 `;
 
+const TotalVolumeSub = `
+subscription TotalValue {
+  serum_events_aggregate(where: {type: {_eq: trade}}) {
+    aggregate {
+      sum {
+        total_value
+      }
+    }
+  }
+}
+`;
+
 export default function Dashboard() {
   const [{ data, fetching, error }] = useSubscription<any>({
     query: SerumMarketsQuery,
+  });
+  const [{ data: totalVolumeData, fetching: totalVolumeFetching, error: totalVolumeErr }] = useSubscription<any>({
+    query: TotalVolumeSub,
   });
 
   if (fetching) return <p>Loading...</p>;
@@ -26,6 +41,9 @@ export default function Dashboard() {
 
   return (
     <>
+    <section>
+      <div>Total Volume: {num(totalVolumeData?.serum_events_aggregate?.aggregate?.sum?.total_value)}</div>
+    </section>
       <section>
           <table>
             <thead>
