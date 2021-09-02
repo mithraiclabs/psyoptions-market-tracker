@@ -13,6 +13,7 @@
     "react-dom": "preact/compat"
   },
   "dependencies": {
+    "@solana/web3.js": "^1.24.1",
     "date-fns": "^2.21.3",
     "graphql": "^15.5.0",
     "graphql-subscriptions-client": "^0.16.0",
