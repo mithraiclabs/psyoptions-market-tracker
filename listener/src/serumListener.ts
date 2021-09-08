@@ -8,6 +8,7 @@ import { IndexedSerumMarket } from "./types";
 import { ClusterEnv } from "@mithraic-labs/market-meta/dist/types";
 import { batchSerumMarkets } from "./helpers/serum";
 import { wait } from "./helpers/helpers";
+import { logger } from "./helpers/logger";
 
 const getOpenOrderAccount = async (connection: Connection, address: PublicKey, serumProgramId: PublicKey, attempt = 0): Promise<OpenOrders|null> => {
   try {
@@ -17,8 +18,8 @@ const getOpenOrderAccount = async (connection: Connection, address: PublicKey, s
     }
     return await OpenOrders.load(connection, address, serumProgramId)
   } catch (error) {
-    console.log('Caught error in getOpenOrderAccount')
-    console.error(error)
+    logger.error('Caught error in getOpenOrderAccount')
+    logger.error(error)
     if (attempt < 10) {
       return getOpenOrderAccount(connection, address, serumProgramId, attempt + 1)
     }
@@ -180,8 +181,10 @@ export const handleEventQueueChange = (connection: Connection, serumProgramId: P
   upsertSerumMarket({...indexedMarket, last_event_seq_num: header.seqNum})
 
   if (indexedMarket.last_event_seq_num) {
+    logger.debug(`Decoding events from seq: ${indexedMarket.last_event_seq_num} to: ${header.seqNum}`)
     events = decodeEventsSince(accountInfo.data, indexedMarket.last_event_seq_num)
   } else {
+    logger.debug("Decoding all events")
     events = decodeEventQueue(accountInfo.data)
   }
   // map the events to better structure
@@ -248,7 +251,7 @@ export const subscribeToPackagedSerumMarkets = async (connection: Connection, cl
   await markets.reduce(async (accumulator, market) => {
     await accumulator;
 
-    console.log(`Subscribing to market: ${market.address.toString()}`)
+    logger.info(`Subscribing to market: ${market.address.toString()}`)
     // subscribe to the serum event queue
     connection.onAccountChange(
       // @ts-ignore: serum decoded
