@@ -42,6 +42,10 @@ Parameters:
   SolanaWsEndpoint:
     Description: The URL for a Solana RPC Websocket endpoint
     Type: String
+  ListenerLogLevel:
+    Description: The log level for the listener
+    Type: String
+    Default: info
 
 Mappings: 
   RegionMap:
@@ -521,6 +525,8 @@ Resources:
               Value: !Ref SolanaCluster
             - Name: HASURA_GRAPHQL_ADMIN_SECRET
               Value: !Sub "{{resolve:secretsmanager:${HasuraAdminSecret}::secret}}"
+            - Name: LISTENER_LOG_LEVEL
+              Value: !Ref ListenerLogLevel
           LogConfiguration:
             LogDriver: awslogs
             Options:

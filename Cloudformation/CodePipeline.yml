@@ -362,7 +362,8 @@ Resources:
                     "Ec2KeyNameParam": "${Ec2KeyNameParam}",
                     "SolanaRpcUrl": "${DevnetRPCUrl}",
                     "SolanaWsEndpoint": "${DevnetWsEndpoint}",
-                    "SolanaCluster": "devnet"
+                    "SolanaCluster": "devnet",
+                    "ListenerLogLevel": "debug"
                   }
                 RoleArn:
                   Fn::GetAtt: [CloudformationExecutionRole, Arn]
@@ -467,7 +468,8 @@ Resources:
                     "Ec2KeyNameParam": "${Ec2KeyNameParam}",
                     "SolanaRpcUrl": "${MainnetRPCUrl}",
                     "SolanaWsEndpoint": "${MainnetWsEndpoint}",
-                    "SolanaCluster": "mainnet"
+                    "SolanaCluster": "mainnet",
+                    "ListenerLogLevel": "debug"
                   }
                 RoleArn:
                   Fn::GetAtt: [CloudformationExecutionRole, Arn]
