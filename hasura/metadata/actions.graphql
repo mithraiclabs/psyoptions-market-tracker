@@ -1,7 +1,7 @@
 
 
 input SerumEventsInput {
-  account : String!
+  account : String
   account_slot : Int
   client_id : String
   fee_cost : numeric
