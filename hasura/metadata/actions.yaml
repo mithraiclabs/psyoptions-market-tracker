@@ -1,6 +1,7 @@
 actions: []
 custom_types:
   enums: []
-  input_objects: []
+  input_objects:
+  - name: SerumEventsInput
   objects: []
   scalars: []

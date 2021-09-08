@@ -115,23 +115,25 @@
   - role: anonymous
     permission:
       columns:
-      - serum_market_address
-      - type
-      - timestamp
-      - slot
-      - version
-      - id
-      - side
-      - price
-      - size
-      - order_id
-      - client_id
       - account
       - account_slot
-      - fee_tier
+      - client_id
       - fee_cost
+      - fee_tier
+      - id
       - maker
+      - order_id
+      - price
+      - serum_market_address
+      - side
+      - size
+      - slot
+      - timestamp
+      - total_value
+      - type
+      - version
       filter: {}
+      allow_aggregations: true
 - table:
     schema: public
     name: serum_markets

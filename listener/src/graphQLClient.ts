@@ -371,7 +371,7 @@ export const submitSerumEvents = async (events: EventTypes[]) => {
   const objects = events.map(event => objectKeysCamelToSnake(event))
   const body = {
     query: `
-    mutation ($objects: [serum_events_insert_input!]!) {
+    mutation ($objects: [SerumEventsInput!]!) {
       insert_serum_events(
         objects: $objects
       ) {

@@ -1,2 +1,20 @@
 
 
+input SerumEventsInput {
+  account : String!
+  account_slot : Int
+  client_id : String
+  fee_cost : numeric
+  fee_tier : Int
+  maker : Boolean
+  order_id : String
+  price : numeric
+  serum_market_address : String
+  side : String
+  size : numeric
+  slot : bigint
+  timestamp : timestamp
+  type : String
+  version : Int
+}
+
