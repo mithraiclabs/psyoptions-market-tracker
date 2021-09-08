@@ -370,22 +370,26 @@ export const upsertSerumMarket = async (serumMarket: IndexedSerumMarket) => {
 
 export const submitSerumEvents = async (events: EventTypes[]) => {
   const objects = events.map(event => objectKeysCamelToSnake(event))
-  const body = {
-    query: `
-    mutation ($objects: [SerumEventsInput!]!) {
-      insertSerumEvents(
-        objects: $objects
-      ) {
-        returning {
-          serum_market_address
+  /* There is a postgres generated column on the _serum_events_ table. 
+  That coupled with this [Hasura issuse](https://github.com/hasura/graphql-engine/issues/4633)
+  requires that events be submitted one at a time. When this issue is 
+  resolved or a work around is found this could be improved with bulk insert
+   */
+  return Promise.all(objects.map(async object => {
+    const body = {
+      query: `
+      mutation ($object: serum_events_insert_input!) {
+        insert_serum_events_one(object: $object) {
+            serum_market_address
         }
       }
-    }
-      `,
-    variables: { objects },
-  };
-
-  return makeRequest({body})
+      
+        `,
+      variables: { object },
+    };
+  
+    return makeRequest({body})
+  }))
 }
 
 type SubscriptionArguments = {

@@ -1,12 +1,6 @@
-actions:
-- name: insertSerumEvents
-  definition:
-    kind: synchronous
-    handler: http://host.docker.internal:3000
+actions: []
 custom_types:
   enums: []
-  input_objects:
-  - name: SerumEventsInput
-  objects:
-  - name: InsertSerumEventsResponse
+  input_objects: []
+  objects: []
   scalars: []
