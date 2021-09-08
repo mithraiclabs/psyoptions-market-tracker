@@ -9,6 +9,7 @@ import { gql } from 'graphql-tag';
 import { ActivePsyOptionsMarketsEventData, IndexedSerumMarket } from "./types";
 import { EventTypes } from "./events.types";
 import { objectKeysCamelToSnake, wait } from "./helpers/helpers";
+import { logger } from "./helpers/logger";
 
 const ws = require('ws');
 
@@ -32,9 +33,9 @@ export const waitUntilServerUp = async () => {
         break
       }
     } catch (error) {
-      console.error(error)
+      logger.error(error)
     }
-    console.log('...GraphQL server not ready, waiting')
+    logger.info('...GraphQL server not ready, waiting')
     await wait(1000)
   }
   return true
@@ -59,8 +60,8 @@ export const makeRequest = async ({body}: {body: object}): Promise<{
 
     return {response}
   } catch (err) {
-    console.log('*** error making request to hasura')
-    console.error({ err });
+    logger.error('*** error making request to hasura')
+    logger.error({ err });
     return {error: err};
   }
 }
@@ -372,7 +373,7 @@ export const submitSerumEvents = async (events: EventTypes[]) => {
   const body = {
     query: `
     mutation ($objects: [SerumEventsInput!]!) {
-      insert_serum_events(
+      insertSerumEvents(
         objects: $objects
       ) {
         returning {
@@ -407,7 +408,7 @@ export const subscribeToMissingSerumMarkets = ({onEvent, onError}: SubscriptionA
     {}                                                   // Query variables
   );
   return subscriptionClient.subscribe(onEvent, (error) => {
-    console.error(error)
+    logger.error(error)
     if (onError) {
       onError(error)
     }
@@ -437,7 +438,7 @@ export const subscribeToActivePsyOptionMarkets = ({onEvent, onError}: ActivePsyO
     {}                                                   // Query variables
   );
   return subscriptionClient.subscribe(onEvent, (error) => {
-    console.error(error)
+    logger.error(error)
     if (onError) {
       onError(error)
     }

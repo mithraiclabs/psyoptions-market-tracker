@@ -1,6 +1,14 @@
+type Mutation {
+  insertSerumEvents (
+    objects: [SerumEventsInput!]!
+  ): [InsertSerumEventsResponse]
+}
+
+
 
 
 input SerumEventsInput {
+  id : String
   account : String
   account_slot : Int
   client_id : String
@@ -16,5 +24,9 @@ input SerumEventsInput {
   timestamp : timestamp
   type : String
   version : Int
+}
+
+type InsertSerumEventsResponse {
+  serum_market_address : String
 }
 
