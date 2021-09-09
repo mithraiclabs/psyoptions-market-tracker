@@ -148,6 +148,7 @@ const _mapEventToDataMessage = (
 // (i.e. something like an advisory lock on a row, so we can determine if a market's 
 // event queue is being consumed by some other process)
 export const handleEventQueueChange = (connection: Connection, serumProgramId: PublicKey, market: Market) => async (accountInfo: AccountInfo<Buffer>, context: Context) => {
+  logger.debug(`handleEventQueueChange for market: ${market.address.toString()}`)
   // retrieve the last event queue sequence number that was tracked from the database
   const timestamp = new Date().toISOString()
   const {error, response} = await getSerumMarketByAddress(market.address.toString())
