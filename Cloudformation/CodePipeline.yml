@@ -469,7 +469,8 @@ Resources:
                     "SolanaRpcUrl": "${MainnetRPCUrl}",
                     "SolanaWsEndpoint": "${MainnetWsEndpoint}",
                     "SolanaCluster": "mainnet",
-                    "ListenerLogLevel": "debug"
+                    "ListenerLogLevel": "debug",
+                    "TimeScaleInstanceType": "t3.medium"
                   }
                 RoleArn:
                   Fn::GetAtt: [CloudformationExecutionRole, Arn]

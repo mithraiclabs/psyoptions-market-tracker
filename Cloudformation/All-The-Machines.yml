@@ -46,6 +46,11 @@ Parameters:
     Description: The log level for the listener
     Type: String
     Default: info
+  TimeScaleInstanceType:
+    Description: The log level for the listener
+    Type: String
+    AllowedValues: ["t3.2xlarge","t3.large","t3.medium","t3.micro","t3.nano","t3.small","t3.xlarge"]
+    Default: t3.small
 
 Mappings: 
   RegionMap:
@@ -220,7 +225,7 @@ Resources:
       EbsOptimized: true
       IamInstanceProfile: !Ref TimescaleIamInstanceProfile
       ImageId: !FindInMap [ RegionMap, !Ref AWS::Region, 'AwsLinux2EcsOptimized' ]
-      InstanceType: t3.small
+      InstanceType: !Ref TimeScaleInstanceType
       KeyName: !Ref Ec2KeyNameParam
       # Monitoring: Boolean
       # TODO move the instance to a private subnet after setup and configuration is verified.
