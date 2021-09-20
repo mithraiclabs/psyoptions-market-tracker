@@ -1,10 +1,12 @@
 // @ts-nocheck
 const rollupPluginReplace = require("@rollup/plugin-replace");
 
-const GRAPHQL_URL = process.env.GRAPHQL_URL.replace(
-  "hasura",
-  process.env.EXT_HOST
-);
+// const GRAPHQL_URL = process.env.GRAPHQL_URL.replace(
+//   "hasura",
+//   process.env.EXT_HOST
+// );
+
+const GRAPHQL_URL = "https://api.psyoptions.io/v1/graphql"
 
 console.log({ GRAPHQL_URL });
 

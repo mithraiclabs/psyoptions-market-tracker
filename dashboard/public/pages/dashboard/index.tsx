@@ -1,5 +1,6 @@
 import { useSubscription } from "urql";
 import Events from "./events";
+import { getUnderlyingAndQuoteCountsByMint } from "./psyoptions";
 import { formatMarketName } from "./shared";
 
 const SerumMarketsQuery = `
@@ -29,6 +30,7 @@ subscription TotalValue {
 `;
 
 export default function Dashboard() {
+  getUnderlyingAndQuoteCountsByMint()
   const [{ data, fetching, error }] = useSubscription<any>({
     query: SerumMarketsQuery,
   });
