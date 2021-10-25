@@ -48,10 +48,10 @@
     enabled "2.0.x"
     kuler "^2.0.0"
 
-"@mithraic-labs/market-meta@^0.0.18":
-  version "0.0.18"
-  resolved "https://registry.yarnpkg.com/@mithraic-labs/market-meta/-/market-meta-0.0.18.tgz#212784677754683144d489f301bda3908cf4b58a"
-  integrity sha512-8mUZfHFlGLaKBUPuRJISWb4KkRir2kiMTFX2Qe2RHgAOEaeGuk6s2xJoCOpCriUne85UcS4G5NMkPbsaGixBkQ==
+"@mithraic-labs/market-meta@^0.0.19":
+  version "0.0.19"
+  resolved "https://registry.yarnpkg.com/@mithraic-labs/market-meta/-/market-meta-0.0.19.tgz#f79d6ce430cace25ef8a0ca5cc0f393771335d60"
+  integrity sha512-Ux/ZgvXSXLPmM7qN9ci8zS52ALBZ5hZe+CxEHNkWxQvc4YEAxem34TDKjzIkopBJTGmUBhKKnAij2QI+mhUFSg==
 
 "@mithraic-labs/psyoptions@^0.5.2":
   version "0.5.2"
