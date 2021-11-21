@@ -30,6 +30,7 @@ const solanaCluster = process.env['SOLANA_CLUSTER'];
     throw new Error(`Unknown SOLANA_CLUSTER ${solanaCluster}`)
   }
   subscribeToPackagedSerumMarkets(connection, marketMeta)
+  
 })();
 
 
